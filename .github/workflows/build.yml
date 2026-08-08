@@ -14,10 +14,6 @@ jobs:
   build:
     name: Build APKs
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: petingle
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,7 +37,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('petingle/**/*.gradle*', 'petingle/**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -53,7 +49,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: petingle-debug
-          path: petingle/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -74,6 +70,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: petingle-release-signed
-          path: petingle/app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 7

@@ -1,0 +1,1 @@
+- [Validação Android](android-build-validation.md) — a compilação local requer Android SDK; o workflow do GitHub é a validação completa disponível.
