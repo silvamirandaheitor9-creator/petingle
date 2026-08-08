@@ -111,4 +111,7 @@ dependencies {
 
     // Coleções imutáveis — elimina instabilidade de List<T> no compilador do Compose
     implementation(libs.kotlinx.collections.immutable)
+
+    // Start.io — SDK de anúncios in-app
+    implementation(libs.startio.inapp.sdk)
 }
