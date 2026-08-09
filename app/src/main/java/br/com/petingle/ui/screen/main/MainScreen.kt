@@ -35,6 +35,8 @@ import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Pets
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -60,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import br.com.petingle.ui.theme.OrangeGradEnd
@@ -68,6 +71,10 @@ import br.com.petingle.ui.theme.OrangePrimary
 import br.com.petingle.ui.viewmodel.HomeViewModel
 import br.com.petingle.ui.viewmodel.PetsViewModel
 import br.com.petingle.ui.viewmodel.ReminderViewModel
+import com.startapp.sdk.adsbase.Ad
+import com.startapp.sdk.adsbase.StartAppAd
+import com.startapp.sdk.adsbase.StartAppAd.AdMode
+import com.startapp.sdk.adsbase.adlisteners.AdEventListener
 import com.startapp.sdk.ads.banner.Banner
 import java.util.Calendar
 
@@ -107,6 +114,9 @@ fun MainScreen(
     // ── Badge da aba Meus Pets ───────────────────────────────────────────────
     val petsViewModel: PetsViewModel = hiltViewModel()
     val petCount by petsViewModel.petCount.collectAsState()
+    val petLimit by petsViewModel.petLimit.collectAsState()
+    val context = LocalContext.current
+    var showPetLimitDialog by remember { mutableStateOf(false) }
 
     // ── ViewModel de Lembretes ────────────────────────────────────────────────
     val reminderViewModel: ReminderViewModel = hiltViewModel()
@@ -202,7 +212,13 @@ fun MainScreen(
                         .padding(end = 16.dp, bottom = 16.dp),
                     onClick = {
                         when (currentTab) {
-                            MainTab.PETS      -> onNavigateToNewPet()
+                            MainTab.PETS      -> {
+                                if (petCount < petLimit) {
+                                    onNavigateToNewPet()
+                                } else {
+                                    showPetLimitDialog = true
+                                }
+                            }
                             MainTab.DIARY     -> showAddDiaryEntry = true
                             MainTab.REMINDERS -> onNavigateToNewReminder(-1L)
                             else -> {}
@@ -211,6 +227,50 @@ fun MainScreen(
                 )
             }
         }
+    }
+
+    if (showPetLimitDialog) {
+        AlertDialog(
+            onDismissRequest = { showPetLimitDialog = false },
+            title = { Text("Limite de perfis atingido") },
+            text = {
+                Text(
+                    "Você já cadastrou $petLimit pets. Assista a um anúncio curto para desbloquear mais ${PetsViewModel.BONUS_PET_SLOTS} perfis.",
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showPetLimitDialog = false
+                        val rewardedAd = StartAppAd(context)
+                        rewardedAd.setVideoListener {
+                            petsViewModel.unlockMorePets()
+                        }
+                        rewardedAd.loadAd(
+                            AdMode.REWARDED_VIDEO,
+                            object : AdEventListener {
+                                override fun onReceiveAd(ad: Ad) {
+                                    rewardedAd.showAd()
+                                }
+
+                                override fun onFailedToReceiveAd(ad: Ad) {
+                                    // O usuário pode tentar novamente quando houver anúncio disponível.
+                                }
+                            },
+                        )
+                    },
+                ) {
+                    Text("Assistir anúncio")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { showPetLimitDialog = false },
+                ) {
+                    Text("Agora não")
+                }
+            },
+        )
     }
 }
 

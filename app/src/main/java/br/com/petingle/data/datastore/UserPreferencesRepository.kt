@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -25,6 +26,7 @@ class UserPreferencesRepository @Inject constructor(
         private val KEY_TERMS_ACCEPTED  = booleanPreferencesKey("terms_accepted")
         private val KEY_USER_NAME       = stringPreferencesKey("user_name")
         private val KEY_PROFILE_PHOTO   = stringPreferencesKey("profile_photo_path")
+        private val KEY_BONUS_PET_SLOTS = intPreferencesKey("bonus_pet_slots")
     }
 
     val isDarkTheme: Flow<Boolean> = context.dataStore.data
@@ -41,6 +43,9 @@ class UserPreferencesRepository @Inject constructor(
 
     val profilePhotoPath: Flow<String> = context.dataStore.data
         .map { it[KEY_PROFILE_PHOTO] ?: "" }
+
+    val bonusPetSlots: Flow<Int> = context.dataStore.data
+        .map { it[KEY_BONUS_PET_SLOTS] ?: 0 }
 
     suspend fun setDarkTheme(dark: Boolean) {
         context.dataStore.edit { it[KEY_DARK_THEME] = dark }
@@ -60,5 +65,13 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setProfilePhotoPath(path: String) {
         context.dataStore.edit { it[KEY_PROFILE_PHOTO] = path }
+    }
+
+    suspend fun addBonusPetSlots(slots: Int) {
+        require(slots > 0)
+        context.dataStore.edit { preferences ->
+            preferences[KEY_BONUS_PET_SLOTS] =
+                (preferences[KEY_BONUS_PET_SLOTS] ?: 0) + slots
+        }
     }
 }
