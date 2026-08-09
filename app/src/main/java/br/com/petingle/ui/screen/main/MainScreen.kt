@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -57,6 +58,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -66,6 +68,7 @@ import br.com.petingle.ui.theme.OrangePrimary
 import br.com.petingle.ui.viewmodel.HomeViewModel
 import br.com.petingle.ui.viewmodel.PetsViewModel
 import br.com.petingle.ui.viewmodel.ReminderViewModel
+import com.startapp.sdk.ads.banner.Banner
 import java.util.Calendar
 
 // ─── Definição das 5 abas ────────────────────────────────────────────────────
@@ -137,11 +140,14 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            PetIngleBottomBar(
-                tabs          = MainTab.entries,
-                selectedIndex = selectedTabIndex,
-                onTabSelected = { selectedTabIndex = it },
-            )
+            Column {
+                StartIoBanner()
+                PetIngleBottomBar(
+                    tabs          = MainTab.entries,
+                    selectedIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it },
+                )
+            }
         },
     ) { paddingValues ->
         Box(
@@ -205,6 +211,30 @@ fun MainScreen(
                 )
             }
         }
+    }
+}
+
+/**
+ * Banner padrão do Start.io compartilhado pela navegação principal.
+ *
+ * Ele fica em uma faixa própria, antes da NavigationBar, para que o Scaffold
+ * reserve o espaço automaticamente e nenhum conteúdo ou ação fique encoberto.
+ */
+@Composable
+private fun StartIoBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(MaterialTheme.colorScheme.surface),
+        contentAlignment = Alignment.Center,
+    ) {
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            factory = { context -> Banner(context) },
+        )
     }
 }
 
