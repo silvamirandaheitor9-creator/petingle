@@ -74,6 +74,7 @@ import br.com.petingle.ui.viewmodel.ReminderViewModel
 import com.startapp.sdk.adsbase.Ad
 import com.startapp.sdk.adsbase.StartAppAd
 import com.startapp.sdk.adsbase.StartAppAd.AdMode
+import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener
 import com.startapp.sdk.adsbase.adlisteners.AdEventListener
 import com.startapp.sdk.ads.banner.Banner
 import java.util.Calendar
@@ -117,6 +118,8 @@ fun MainScreen(
     val petLimit by petsViewModel.petLimit.collectAsState()
     val context = LocalContext.current
     var showPetLimitDialog by remember { mutableStateOf(false) }
+    var isRewardedAdLoading by rememberSaveable { mutableStateOf(false) }
+    var rewardedAdUnavailable by rememberSaveable { mutableStateOf(false) }
 
     // ── ViewModel de Lembretes ────────────────────────────────────────────────
     val reminderViewModel: ReminderViewModel = hiltViewModel()
@@ -216,6 +219,7 @@ fun MainScreen(
                                 if (petCount < petLimit) {
                                     onNavigateToNewPet()
                                 } else {
+                                    rewardedAdUnavailable = false
                                     showPetLimitDialog = true
                                 }
                             }
@@ -234,38 +238,86 @@ fun MainScreen(
             onDismissRequest = { showPetLimitDialog = false },
             title = { Text("Limite de perfis atingido") },
             text = {
-                Text(
-                    "Você já cadastrou $petLimit pets. Assista a um anúncio curto para desbloquear mais ${PetsViewModel.BONUS_PET_SLOTS} perfis.",
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Você já cadastrou $petLimit pets. Assista a um anúncio curto para desbloquear mais ${PetsViewModel.BONUS_PET_SLOTS} perfis.",
+                    )
+                    if (isRewardedAdLoading) {
+                        Text(
+                            "Carregando anúncio...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                        )
+                    } else if (rewardedAdUnavailable) {
+                        Text(
+                            "Não há anúncio disponível agora. Tente novamente em instantes.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        showPetLimitDialog = false
+                        isRewardedAdLoading = true
+                        rewardedAdUnavailable = false
                         val rewardedAd = StartAppAd(context)
+                        var rewardGranted = false
                         rewardedAd.setVideoListener {
+                            rewardGranted = true
+                            isRewardedAdLoading = false
+                            showPetLimitDialog = false
                             petsViewModel.unlockMorePets()
                         }
                         rewardedAd.loadAd(
                             AdMode.REWARDED_VIDEO,
                             object : AdEventListener {
                                 override fun onReceiveAd(ad: Ad) {
-                                    rewardedAd.showAd()
+                                    if (!rewardedAd.showAd(
+                                            object : AdDisplayListener {
+                                                override fun adDisplayed(ad: Ad) = Unit
+
+                                                override fun adClicked(ad: Ad) = Unit
+
+                                                override fun adHidden(ad: Ad) {
+                                                    if (!rewardGranted) {
+                                                        isRewardedAdLoading = false
+                                                    }
+                                                }
+
+                                                override fun adNotDisplayed(ad: Ad) {
+                                                    isRewardedAdLoading = false
+                                                    rewardedAdUnavailable = true
+                                                }
+                                            },
+                                        )
+                                    ) {
+                                        isRewardedAdLoading = false
+                                        rewardedAdUnavailable = true
+                                    }
                                 }
 
                                 override fun onFailedToReceiveAd(ad: Ad) {
-                                    // O usuário pode tentar novamente quando houver anúncio disponível.
+                                    isRewardedAdLoading = false
+                                    rewardedAdUnavailable = true
                                 }
                             },
                         )
                     },
+                    enabled = !isRewardedAdLoading,
                 ) {
-                    Text("Assistir anúncio")
+                    Text(if (isRewardedAdLoading) "Aguarde..." else "Assistir anúncio")
                 }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(
-                    onClick = { showPetLimitDialog = false },
+                    onClick = {
+                        if (!isRewardedAdLoading) {
+                            showPetLimitDialog = false
+                        }
+                    },
+                    enabled = !isRewardedAdLoading,
                 ) {
                     Text("Agora não")
                 }
