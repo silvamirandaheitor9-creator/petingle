@@ -73,6 +73,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: petingle-release
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
-          if-no-files-found: ignore
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
           retention-days: 7
