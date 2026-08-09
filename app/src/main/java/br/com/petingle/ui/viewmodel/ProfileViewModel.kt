@@ -282,11 +282,9 @@ class ProfileViewModel @Inject constructor(
 
                 // Restaurar nome e foto de perfil do arquivo de metadata
                 val metadataFile = File(context.cacheDir, "petingle_import_metadata.json")
-                val parentDir = File(context.cacheDir)
-                parentDir.listFiles()?.forEach { file ->
-                    if (file.name == "petingle_metadata.json") {
-                        file.copyTo(metadataFile, overwrite = true)
-                    }
+                val sourceMetadataFile = File(context.cacheDir, "petingle_metadata.json")
+                if (sourceMetadataFile.exists()) {
+                    sourceMetadataFile.copyTo(metadataFile, overwrite = true)
                 }
 
                 if (metadataFile.exists()) {
