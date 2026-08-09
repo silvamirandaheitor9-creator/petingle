@@ -71,13 +71,18 @@ O app oferece função de backup manual. O arquivo gerado é salvo na pasta que 
 • Notificações: usadas para enviar lembretes de vacinas, consultas e outros cuidados que você cadastrar. Você pode desativar notificações a qualquer momento nas configurações do sistema.
 Nenhuma permissão é solicitada antes do momento em que você realmente precisa dela.
 
-5. TERCEIROS
-O app não compartilha seus dados pessoais com nenhuma empresa terceira. Não utilizamos ferramentas de análise de comportamento ou rastreamento de usuário.
+5. PUBLICIDADE E SERVIÇOS DE TERCEIROS
+O PetIngle exibe anúncios por meio da plataforma Start.io. Para disponibilizar, personalizar, limitar a frequência e medir o desempenho dos anúncios, a Start.io e seus parceiros podem tratar dados técnicos do aparelho e da utilização da publicidade, conforme as políticas próprias desses serviços. O PetIngle não envia para a Start.io os nomes, fotos, registros de saúde ou lembretes cadastrados no app.
 
-6. CRIANÇAS
+Algumas áreas do app podem mostrar anúncios na parte inferior da tela para manter a experiência gratuita. Quando o usuário atingir o limite inicial de 10 perfis de pets, poderá assistir voluntariamente a um anúncio recompensado para desbloquear mais 5 perfis. Cada desbloqueio depende da disponibilidade e da conclusão válida do anúncio, e o procedimento pode ser repetido enquanto essa opção estiver disponível.
+
+6. DADOS E RASTREAMENTO
+O PetIngle não utiliza ferramentas próprias de análise de comportamento ou rastreamento de usuário. A publicidade pode utilizar identificadores e dados técnicos tratados pela Start.io, de acordo com as permissões, configurações do aparelho e políticas aplicáveis.
+
+7. CRIANÇAS
 O PetIngle não é destinado a crianças menores de 13 anos. Não coletamos intencionalmente informações de menores.
 
-7. SEUS DIREITOS (LGPD — LEI 13.709/2018)
+8. SEUS DIREITOS (LGPD — LEI 13.709/2018)
 Em conformidade com a Lei Geral de Proteção de Dados, você tem direito a:
 • Confirmar a existência de tratamento de dados;
 • Acessar, corrigir ou excluir seus dados (feito diretamente no app);
@@ -85,7 +90,7 @@ Em conformidade com a Lei Geral de Proteção de Dados, você tem direito a:
 • Revogar consentimentos a qualquer momento.
 Como todos os dados ficam no seu dispositivo, você exerce esses direitos diretamente pelo app ou desinstalando-o.
 
-8. ALTERAÇÕES NESTA POLÍTICA
+9. ALTERAÇÕES NESTA POLÍTICA
 Podemos atualizar esta política periodicamente. Alterações relevantes serão comunicadas dentro do próprio app. A data de "última atualização" no topo sempre reflete a versão vigente.
 """.trimIndent()
 
@@ -99,16 +104,19 @@ Ao instalar ou usar o PetIngle, você concorda com estes Termos de Uso. Se não 
 2. DESCRIÇÃO DO SERVIÇO
 O PetIngle é um aplicativo de organização pessoal para tutores de animais de estimação. Permite cadastrar pets, registrar histórico de saúde, criar lembretes e manter um diário fotográfico — tudo armazenado localmente no seu dispositivo.
 
-3. NÃO SUBSTITUI VETERINÁRIO
+3. PUBLICIDADE E DESBLOQUEIO DE PERFIS
+O PetIngle é disponibilizado com anúncios exibidos pela plataforma Start.io. Os anúncios podem aparecer em espaços reservados na parte inferior das abas, sem impedir o uso das funções principais. Ao atingir o limite inicial de 10 perfis de pets, o usuário poderá assistir voluntariamente a um anúncio recompensado para liberar mais 5 perfis. Esse desbloqueio pode ser repetido, conforme a disponibilidade do anúncio.
+
+4. NÃO SUBSTITUI VETERINÁRIO
 As funcionalidades do PetIngle — incluindo campos de saúde, lembretes e registros — têm finalidade exclusivamente organizacional. O app não oferece diagnósticos, prescrições ou orientações médico-veterinárias. Consulte sempre um médico-veterinário habilitado para decisões sobre a saúde dos seus pets.
 
-4. RESPONSABILIDADES DO USUÁRIO
+5. RESPONSABILIDADES DO USUÁRIO
 • Você é responsável pela veracidade das informações cadastradas.
 • Você é responsável por realizar backups regulares dos seus dados.
 • Você concorda em usar o app somente para fins lícitos e pessoais.
 • Não é permitido usar o app para fins comerciais sem autorização expressa.
 
-5. PROPRIEDADE INTELECTUAL
+6. PROPRIEDADE INTELECTUAL
 O nome "PetIngle", o mascote, o design, os ícones, os textos e demais elementos visuais são propriedade exclusiva dos criadores do app. É vedada a reprodução, cópia ou uso comercial sem autorização prévia por escrito.
 
 6. LIMITAÇÃO DE RESPONSABILIDADE
