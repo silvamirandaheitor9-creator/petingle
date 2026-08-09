@@ -100,11 +100,7 @@ fun RemindersScreen(
     val historicoExpanded by viewModel.historicoExpanded.collectAsState()
 
     val isEmpty = grouped.isEmpty()
-
-    if (isEmpty) {
-        ReminderEmptyState()
-        return
-    }
+    val selectedPetName = pets.firstOrNull { it.id == selectedPetId }?.name
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -117,6 +113,19 @@ fun RemindersScreen(
                     pets = pets,
                     selectedPetId = selectedPetId,
                     onSelectPet = { viewModel.selectPet(it) },
+                )
+            }
+        }
+
+        if (isEmpty) {
+            item(key = "empty_filtered_reminders") {
+                ReminderEmptyState(
+                    selectedPetName = selectedPetName,
+                    onClearFilter = if (selectedPetId != null) {
+                        { viewModel.selectPet(null) }
+                    } else {
+                        null
+                    },
                 )
             }
         }
@@ -200,35 +209,48 @@ fun RemindersScreen(
 // ─── Estado vazio ─────────────────────────────────────────────────────────────
 
 @Composable
-private fun ReminderEmptyState() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+private fun ReminderEmptyState(
+    selectedPetName: String?,
+    onClearFilter: (() -> Unit)?,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 40.dp, vertical = 56.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(horizontal = 40.dp),
-        ) {
-            Image(
-                painter = painterResource(R.drawable.vazio_lembretes),
-                contentDescription = "Nenhum lembrete",
-                modifier = Modifier.fillMaxWidth(0.65f),
-                contentScale = ContentScale.Fit,
-            )
-            Text(
-                text = "Nenhum lembrete por aqui ainda",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = "Toque no + para criar o primeiro lembrete para seus pets.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center,
-            )
+        Image(
+            painter = painterResource(R.drawable.vazio_lembretes),
+            contentDescription = "Nenhum lembrete",
+            modifier = Modifier.fillMaxWidth(0.65f),
+            contentScale = ContentScale.Fit,
+        )
+        Text(
+            text = if (selectedPetName != null) {
+                "Nenhum lembrete para $selectedPetName"
+            } else {
+                "Nenhum lembrete por aqui ainda"
+            },
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = if (selectedPetName != null) {
+                "Os lembretes dos outros pets continuam salvos. Volte para “Todos” para visualizá-los."
+            } else {
+                "Toque no + para criar o primeiro lembrete para seus pets."
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            textAlign = TextAlign.Center,
+        )
+        if (onClearFilter != null) {
+            TextButton(onClick = onClearFilter) {
+                Text("Ver todos os lembretes")
+            }
         }
     }
 }
