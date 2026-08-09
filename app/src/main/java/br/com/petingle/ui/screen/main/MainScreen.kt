@@ -298,6 +298,10 @@ fun MainScreen(
                                     }
                                 }
 
+                                override fun onFailedToReceiveAd(ad: Ad?) {
+                                    isRewardedAdLoading = false
+                                    rewardedAdUnavailable = true
+                                }
                             },
                         )
                     },
