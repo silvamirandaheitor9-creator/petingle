@@ -2,11 +2,13 @@ package br.com.petingle.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.petingle.data.datastore.UserPreferencesRepository
 import br.com.petingle.data.db.dao.PetDao
 import br.com.petingle.data.db.entity.Pet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NewPetViewModel @Inject constructor(
     private val petDao: PetDao,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     /** Caminho da foto de perfil (recebe o resultado do PetPhotoEditorScreen). */
@@ -54,10 +57,16 @@ class NewPetViewModel @Inject constructor(
     }
 
     /** Salva um pet novo. */
-    fun savePet(pet: Pet, onSaved: () -> Unit) {
+    fun savePet(pet: Pet, onSaved: () -> Unit, onLimitReached: () -> Unit = {}) {
         if (_isSaving.value) return
         _isSaving.value = true
         viewModelScope.launch {
+            val petLimit = PetsViewModel.INITIAL_PET_LIMIT + prefs.bonusPetSlots.first()
+            if (petDao.getPetCountOnce() >= petLimit) {
+                _isSaving.value = false
+                onLimitReached()
+                return@launch
+            }
             petDao.insertPet(pet)
             onSaved()
         }

@@ -12,6 +12,9 @@ interface PetDao {
     @Query("SELECT COUNT(*) FROM pets")
     fun getPetCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM pets")
+    suspend fun getPetCountOnce(): Int
+
     @Query("SELECT * FROM pets WHERE id = :id")
     fun getPetById(id: Long): Flow<Pet?>
 

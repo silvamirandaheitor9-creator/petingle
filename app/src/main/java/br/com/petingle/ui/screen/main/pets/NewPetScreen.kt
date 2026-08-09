@@ -43,6 +43,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -157,6 +158,7 @@ fun NewPetScreen(
 
     // ── Validações ────────────────────────────────────────────────────────────
     var attemptedSave  by remember { mutableStateOf(false) }
+    var showPetLimitMessage by remember { mutableStateOf(false) }
     val nameError      = attemptedSave && name.isBlank()
     val weightValue    = weightText.trim().replace(',', '.').toDoubleOrNull()
     val weightError    = attemptedSave && weightText.isNotBlank() &&
@@ -432,7 +434,11 @@ fun NewPetScreen(
                         if (isEditMode && editingPet != null) {
                             viewModel.updatePet(editingPet!!, pet, onSaved)
                         } else {
-                            viewModel.savePet(pet, onSaved)
+                            viewModel.savePet(
+                                pet = pet,
+                                onSaved = onSaved,
+                                onLimitReached = { showPetLimitMessage = true },
+                            )
                         }
                     },
                     enabled = !isSaving,
@@ -452,6 +458,21 @@ fun NewPetScreen(
                         )
                     }
                 }
+
+    if (showPetLimitMessage) {
+        AlertDialog(
+            onDismissRequest = { showPetLimitMessage = false },
+            title = { Text("Limite de perfis atingido") },
+            text = {
+                Text("Assista a um anúncio na aba Meus Pets para desbloquear mais perfis.")
+            },
+            confirmButton = {
+                TextButton(onClick = { showPetLimitMessage = false }) {
+                    Text("Entendi")
+                }
+            },
+        )
+    }
             }
         }
     }
