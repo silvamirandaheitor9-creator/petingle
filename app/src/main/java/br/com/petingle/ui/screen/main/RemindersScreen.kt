@@ -220,12 +220,17 @@ private fun ReminderEmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Image(
-            painter = painterResource(R.drawable.vazio_lembretes),
-            contentDescription = "Nenhum lembrete",
-            modifier = Modifier.fillMaxWidth(0.65f),
-            contentScale = ContentScale.Fit,
-        )
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.vazio_lembretes),
+                contentDescription = "Nenhum lembrete",
+                modifier = Modifier.size(220.dp),
+                contentScale = ContentScale.Fit,
+            )
+        }
         Text(
             text = if (selectedPetName != null) {
                 "Nenhum lembrete para $selectedPetName"
