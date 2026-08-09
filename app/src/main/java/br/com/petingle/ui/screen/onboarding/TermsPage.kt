@@ -71,8 +71,10 @@ O app oferece função de backup manual. O arquivo gerado é salvo na pasta que 
 • Notificações: usadas para enviar lembretes de vacinas, consultas e outros cuidados que você cadastrar. Você pode desativar notificações a qualquer momento nas configurações do sistema.
 Nenhuma permissão é solicitada antes do momento em que você realmente precisa dela.
 
-5. TERCEIROS
-O app não compartilha seus dados pessoais com nenhuma empresa terceira. Não utilizamos ferramentas de análise de comportamento ou rastreamento de usuário.
+5. ANÚNCIOS E TERCEIROS
+O PetIngle utiliza o SDK de anúncios Start.io para exibir anúncios no aplicativo. O Start.io pode coletar informações sobre seu dispositivo e comportamento de uso para fins de publicidade direcionada, conforme descrito na política de privacidade do Start.io (https://www.start.io/privacy-policy). Você pode desativar anúncios personalizados nas configurações do seu dispositivo.
+
+Além disso, o app não compartilha seus dados pessoais com outras empresas terceiras. Não utilizamos ferramentas adicionais de análise de comportamento ou rastreamento de usuário.
 
 6. CRIANÇAS
 O PetIngle não é destinado a crianças menores de 13 anos. Não coletamos intencionalmente informações de menores.
@@ -111,13 +113,16 @@ As funcionalidades do PetIngle — incluindo campos de saúde, lembretes e regis
 5. PROPRIEDADE INTELECTUAL
 O nome "PetIngle", o mascote, o design, os ícones, os textos e demais elementos visuais são propriedade exclusiva dos criadores do app. É vedada a reprodução, cópia ou uso comercial sem autorização prévia por escrito.
 
-6. LIMITAÇÃO DE RESPONSABILIDADE
+6. ANÚNCIOS
+O PetIngle exibe anúncios através do SDK Start.io. Ao usar o app, você concorda com a exibição desses anúncios. O Start.io pode coletar dados sobre seu dispositivo e comportamento de uso para fins de publicidade direcionada. Para mais informações, consulte a política de privacidade do Start.io (https://www.start.io/privacy-policy). Você pode desativar anúncios personalizados nas configurações do seu dispositivo.
+
+7. LIMITAÇÃO DE RESPONSABILIDADE
 O PetIngle é fornecido "como está", sem garantias de disponibilidade ininterrupta ou ausência de erros. Não nos responsabilizamos por perdas de dados decorrentes de falhas no dispositivo, desinstalação do app ou ausência de backup.
 
-7. MODIFICAÇÕES
-Podemos alterar estes Termos a qualquer momento. O uso continuado do app após a publicação das alterações implica aceitação das novas condições. A data de "última atualização" no topo indica a versão vigente.
+8. MODIFICAÇÕES
+Podemos alterar estes Termos a qualquer momento. O uso continuado do app após a publicação das alterações implica aceitação das novas condições. A data de "\u00faltima atualização" no topo indica a versão vigente.
 
-8. LEI APLICÁVEL
+9. LEI APLICÁVEL
 Estes Termos são regidos pelas leis da República Federativa do Brasil. Qualquer controvérsia será submetida ao foro da comarca do usuário, conforme o Código de Defesa do Consumidor.
 """.trimIndent()
 

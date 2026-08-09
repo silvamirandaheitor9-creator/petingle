@@ -454,14 +454,14 @@ private fun ProfileHeroHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 28.dp),
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Avatar com foto, inicial do nome, ou mascote padrão
                 Box(
                     modifier         = Modifier
-                        .size(72.dp)
-                        .shadow(8.dp, CircleShape)
+                        .size(56.dp)
+                        .shadow(6.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Color.White)
                         .clickable(onClick = onPhotoClick),
@@ -493,7 +493,7 @@ private fun ProfileHeroHeader(
                     Box(
                         modifier         = Modifier
                             .align(Alignment.BottomEnd)
-                            .size(22.dp)
+                            .size(18.dp)
                             .background(OrangePrimary, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -501,12 +501,12 @@ private fun ProfileHeroHeader(
                             imageVector        = Icons.Rounded.Edit,
                             contentDescription = "Alterar foto",
                             tint               = Color.White,
-                            modifier           = Modifier.size(12.dp),
+                            modifier           = Modifier.size(10.dp),
                         )
                     }
                 }
 
-                Spacer(Modifier.width(16.dp))
+                Spacer(Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     if (editingName) {
@@ -548,16 +548,16 @@ private fun ProfileHeroHeader(
                         Text(
                             text       = if (userName.isNotBlank()) "Olá, ${userName.trim()}! 👋"
                                          else "Como podemos te chamar?",
-                            style      = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.ExtraBold,
+                            style      = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
                             color      = Color.White,
                         )
                         Text(
                             text  = "Tutor PetIngle",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.labelSmall,
                             color = Color.White.copy(alpha = 0.75f),
                         )
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(4.dp))
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(24.dp))
@@ -579,15 +579,15 @@ private fun ProfileHeroHeader(
         Card(
             modifier  = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            shape     = RoundedCornerShape(20.dp),
+                .padding(horizontal = 16.dp),
+            shape     = RoundedCornerShape(16.dp),
             colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(8.dp),
+            elevation = CardDefaults.cardElevation(4.dp),
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString())
@@ -607,15 +607,15 @@ private fun StatChip(icon: ImageVector, label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(32.dp)
                 .clip(CircleShape)
                 .background(OrangePrimary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(16.dp))
         }
-        Spacer(Modifier.height(4.dp))
-        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+        Spacer(Modifier.height(2.dp))
+        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
     }
 }
@@ -625,7 +625,7 @@ private fun StatDivider() {
     Box(
         modifier = Modifier
             .width(1.dp)
-            .height(48.dp)
+            .height(40.dp)
             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
     )
 }
@@ -957,8 +957,10 @@ O app oferece função de backup manual. O arquivo gerado é salvo na pasta que 
 • Notificações: usadas para enviar lembretes de vacinas, consultas e outros cuidados que você cadastrar. Você pode desativar notificações a qualquer momento nas configurações do sistema.
 Nenhuma permissão é solicitada antes do momento em que você realmente precisa dela.
 
-5. TERCEIROS
-O app não compartilha seus dados pessoais com nenhuma empresa terceira. Não utilizamos ferramentas de análise de comportamento ou rastreamento de usuário.
+5. ANÚNCIOS E TERCEIROS
+O PetIngle utiliza o SDK de anúncios Start.io para exibir anúncios no aplicativo. O Start.io pode coletar informações sobre seu dispositivo e comportamento de uso para fins de publicidade direcionada, conforme descrito na política de privacidade do Start.io (https://www.start.io/privacy-policy). Você pode desativar anúncios personalizados nas configurações do seu dispositivo.
+
+Além disso, o app não compartilha seus dados pessoais com outras empresas terceiras. Não utilizamos ferramentas adicionais de análise de comportamento ou rastreamento de usuário.
 
 6. CRIANÇAS
 O PetIngle não é destinado a crianças menores de 13 anos. Não coletamos intencionalmente informações de menores.
@@ -994,6 +996,9 @@ As funcionalidades do PetIngle — incluindo campos de saúde, lembretes e regis
 
 5. PROPRIEDADE INTELECTUAL
 O nome "PetIngle", o mascote, o design, os ícones, os textos e demais elementos visuais são propriedade exclusiva dos criadores do app. É vedada a reprodução, cópia ou uso comercial sem autorização prévia por escrito.
+
+6. ANÚNCIOS
+O PetIngle exibe anúncios através do SDK Start.io. Ao usar o app, você concorda com a exibição desses anúncios. O Start.io pode coletar dados sobre seu dispositivo e comportamento de uso para fins de publicidade direcionada. Para mais informações, consulte a política de privacidade do Start.io (https://www.start.io/privacy-policy). Você pode desativar anúncios personalizados nas configurações do seu dispositivo.
 
 7. LIMITAÇÃO DE RESPONSABILIDADE
 O PetIngle é fornecido "como está", sem garantias de disponibilidade ininterrupta ou ausência de erros. Não nos responsabilizamos por perdas de dados decorrentes de falhas no dispositivo, desinstalação do app ou ausência de backup.

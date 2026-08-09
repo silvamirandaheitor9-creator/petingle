@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
+import org.json.JSONObject
 
 // ── Eventos de UI para o ProfileScreen ────────────────────────────────────────
 sealed class ProfileUiEvent {
@@ -140,6 +141,24 @@ class ProfileViewModel @Inject constructor(
 
                 contentResolver.openOutputStream(docUri)?.use { out ->
                     tempDb.inputStream().use { it.copyTo(out) }
+                }
+
+                // Exportar nome e foto de perfil como JSON metadata
+                val metadataFile = File(tempDir, "petingle_metadata.json")
+                val metadata = JSONObject().apply {
+                    put("userName", userName.value)
+                    put("profilePhotoPath", profilePhotoPath.value)
+                }
+                metadataFile.writeText(metadata.toString())
+
+                val metadataDocUri = DocumentsContract.createDocument(
+                    contentResolver, parentUri,
+                    "application/json", "petingle_metadata.json",
+                )
+                if (metadataDocUri != null) {
+                    contentResolver.openOutputStream(metadataDocUri)?.use { out ->
+                        metadataFile.inputStream().use { it.copyTo(out) }
+                    }
                 }
 
                 tempDir.deleteRecursively()
@@ -260,6 +279,33 @@ class ProfileViewModel @Inject constructor(
 
                 src.close()
                 tempFile.delete()
+
+                // Restaurar nome e foto de perfil do arquivo de metadata
+                val metadataFile = File(context.cacheDir, "petingle_import_metadata.json")
+                val parentDir = File(context.cacheDir)
+                parentDir.listFiles()?.forEach { file ->
+                    if (file.name == "petingle_metadata.json") {
+                        file.copyTo(metadataFile, overwrite = true)
+                    }
+                }
+
+                if (metadataFile.exists()) {
+                    try {
+                        val metadataText = metadataFile.readText()
+                        val metadata = JSONObject(metadataText)
+                        val restoredUserName = metadata.optString("userName", "")
+                        val restoredPhotoPath = metadata.optString("profilePhotoPath", "")
+
+                        if (restoredUserName.isNotEmpty()) {
+                            prefs.setUserName(restoredUserName)
+                        }
+                        if (restoredPhotoPath.isNotEmpty()) {
+                            prefs.setProfilePhotoPath(restoredPhotoPath)
+                        }
+                        metadataFile.delete()
+                    } catch (_: Exception) { /* erro silencioso ao restaurar metadata */ }
+                }
+
                 _events.emit(ProfileUiEvent.ImportSuccess)
             } catch (e: Exception) {
                 _events.emit(ProfileUiEvent.ImportError(

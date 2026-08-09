@@ -114,4 +114,7 @@ dependencies {
 
     // Start.io — SDK de anúncios in-app
     implementation(libs.startio.inapp.sdk)
+
+    // JSON
+    implementation("org.json:json:20240303")
 }

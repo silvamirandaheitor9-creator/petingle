@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.ExpandLess
@@ -155,18 +156,13 @@ fun RemindersScreen(
                         initialOffsetY = { it / 4 },
                     ),
                 ) {
-                    ReminderSwipeContainer(
-                        onDeleteDirect    = { viewModel.deleteReminder(reminder) },
+                    ReminderCard(
+                        reminder          = reminder,
+                        pets              = pets,
+                        onEdit            = { onNavigateToNewReminder(reminder.id) },
+                        onDelete          = { viewModel.deleteReminder(reminder) },
                         onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                    ) {
-                        ReminderCard(
-                            reminder          = reminder,
-                            pets              = pets,
-                            onEdit            = { onNavigateToNewReminder(reminder.id) },
-                            onDelete          = { viewModel.deleteReminder(reminder) },
-                            onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                        )
-                    }
+                    )
                 }
             }
         }
@@ -190,19 +186,14 @@ fun RemindersScreen(
                 ) {
                     Column {
                         historico.forEach { reminder ->
-                            ReminderSwipeContainer(
-                                onDeleteDirect    = { viewModel.deleteReminder(reminder) },
+                            ReminderCard(
+                                reminder          = reminder,
+                                pets              = pets,
+                                onEdit            = { onNavigateToNewReminder(reminder.id) },
+                                onDelete          = { viewModel.deleteReminder(reminder) },
                                 onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                            ) {
-                                ReminderCard(
-                                    reminder          = reminder,
-                                    pets              = pets,
-                                    onEdit            = { onNavigateToNewReminder(reminder.id) },
-                                    onDelete          = { viewModel.deleteReminder(reminder) },
-                                    onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                                    isHistorico       = true,
-                                )
-                            }
+                                isHistorico       = true,
+                            )
                         }
                     }
                 }
@@ -338,7 +329,7 @@ private fun HistoricoHeader(count: Int, expanded: Boolean, onToggle: () -> Unit)
     }
 }
 
-// ─── Card de lembrete ─────────────────────────────────────────────────────────
+// ─── Card de lembrete (sem fundo) ─────────────────────────────────────────────
 
 @Composable
 private fun ReminderCard(
@@ -382,114 +373,113 @@ private fun ReminderCard(
         )
     }
 
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
+        // Ícone da categoria + check animado (10.17)
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Ícone da categoria + check animado (10.17)
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(
-                        color = if (isHistorico || reminder.isCompleted)
-                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f)
-                        else
-                            OrangePrimary.copy(alpha = 0.12f),
-                        shape = CircleShape,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    painter = painterResource(reminder.category.toCategoryDrawable()),
-                    contentDescription = reminder.category,
-                    modifier = Modifier
-                        .size(26.dp)
-                        .alpha(1f - checkProgress.value),
-                    contentScale = ContentScale.Fit,
-                )
-                // Traço do checkmark sendo desenhado conforme progress 0 → 1.
-                // checkPath, pathLength e dashIntervals são pré-computados fora do lambda
-                // de desenho — só a phase muda a cada frame (zero alocações por frame).
-                Canvas(modifier = Modifier.size(26.dp)) {
-                    if (checkProgress.value > 0f) {
-                        drawPath(
-                            path  = checkPath,
-                            color = Color(0xFF4CAF50),
-                            style = Stroke(
-                                width      = 3.dp.toPx(),
-                                cap        = StrokeCap.Round,
-                                join       = StrokeJoin.Round,
-                                pathEffect = PathEffect.dashPathEffect(
-                                    intervals = dashIntervals,
-                                    phase     = pathLength * (1f - checkProgress.value),
-                                ),
-                            ),
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Conteúdo
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = reminder.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (reminder.isCompleted)
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f)
+                .size(44.dp)
+                .background(
+                    color = if (isHistorico || reminder.isCompleted)
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f)
                     else
-                        MaterialTheme.colorScheme.onBackground,
-                    textDecoration = if (reminder.isCompleted) TextDecoration.LineThrough else null,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "🐾 $petName  •  $dateStr",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
-                )
-                if (reminder.recurrence != "none") {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Rounded.Repeat,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = OrangePrimary.copy(alpha = 0.7f),
-                        )
-                        Spacer(Modifier.width(3.dp))
-                        Text(
-                            text = reminder.recurrence.toRecurrenceLabel(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = OrangePrimary.copy(alpha = 0.7f),
-                        )
-                    }
+                        OrangePrimary.copy(alpha = 0.12f),
+                    shape = CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(reminder.category.toCategoryDrawable()),
+                contentDescription = reminder.category,
+                modifier = Modifier
+                    .size(26.dp)
+                    .alpha(1f - checkProgress.value),
+                contentScale = ContentScale.Fit,
+            )
+            // Traço do checkmark sendo desenhado conforme progress 0 → 1.
+            // checkPath, pathLength e dashIntervals são pré-computados fora do lambda
+            // de desenho — só a phase muda a cada frame (zero alocações por frame).
+            Canvas(modifier = Modifier.size(26.dp)) {
+                if (checkProgress.value > 0f) {
+                    drawPath(
+                        path  = checkPath,
+                        color = Color(0xFF4CAF50),
+                        style = Stroke(
+                            width      = 3.dp.toPx(),
+                            cap        = StrokeCap.Round,
+                            join       = StrokeJoin.Round,
+                            pathEffect = PathEffect.dashPathEffect(
+                                intervals = dashIntervals,
+                                phase     = pathLength * (1f - checkProgress.value),
+                            ),
+                        ),
+                    )
                 }
             }
+        }
 
-            // Ações
-            Column(horizontalAlignment = Alignment.End) {
-                IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // Conteúdo
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = reminder.title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = if (reminder.isCompleted)
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f)
+                else
+                    MaterialTheme.colorScheme.onBackground,
+                textDecoration = if (reminder.isCompleted) TextDecoration.LineThrough else null,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "🐾 $petName  •  $dateStr",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
+            )
+            if (reminder.recurrence != "none") {
+                Spacer(modifier = Modifier.height(2.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Rounded.Edit,
-                        contentDescription = "Editar",
+                        Icons.Rounded.Repeat,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = OrangePrimary.copy(alpha = 0.7f),
+                    )
+                    Spacer(Modifier.width(3.dp))
+                    Text(
+                        text = reminder.recurrence.toRecurrenceLabel(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OrangePrimary.copy(alpha = 0.7f),
+                    )
+                }
+            }
+        }
+
+        // Ações
+        Column(horizontalAlignment = Alignment.End) {
+            IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.Rounded.Edit,
+                    contentDescription = "Editar",
+                    modifier = Modifier.size(18.dp),
+                    tint = OrangePrimary.copy(alpha = 0.75f),
+                )
+            }
+            Row {
+                IconButton(onClick = onToggleCompleted, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        Icons.Rounded.CheckCircle,
+                        contentDescription = "Marcar como aprovado",
                         modifier = Modifier.size(18.dp),
-                        tint = OrangePrimary.copy(alpha = 0.75f),
+                        tint = if (reminder.isCompleted) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     )
                 }
                 IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(36.dp)) {
@@ -552,78 +542,3 @@ fun String.toRecurrenceLabel(): String = when (this) {
     "monthly" -> "Repete mensalmente"
     else      -> ""
 }
-
-// ─── Swipe container com rastro de pegada (10.18) ─────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ReminderSwipeContainer(
-    onDeleteDirect: () -> Unit,
-    onToggleCompleted: () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onToggleCompleted()
-                    false  // snaps back; card atualiza estado via recomposição
-                }
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onDeleteDirect()
-                    true   // confirma dismiss — item some via DB flow
-                }
-                else -> false
-            }
-        },
-        positionalThreshold = { total -> total * 0.40f },
-    )
-    SwipeToDismissBox(
-        state             = dismissState,
-        backgroundContent = { PawTrailBackground(dismissState) },
-    ) {
-        content()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PawTrailBackground(state: SwipeToDismissBoxState) {
-    val isStartToEnd = state.currentValue == SwipeToDismissBoxValue.StartToEnd ||
-        state.targetValue  == SwipeToDismissBoxValue.StartToEnd
-    val fraction = state.progress
-    val bgColor  = if (isStartToEnd) OrangePrimary else Color(0xFFE53935)
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bgColor.copy(alpha = (fraction * 2.5f).coerceAtMost(0.9f))),
-    ) {
-        Row(
-            modifier = Modifier
-                .align(if (isStartToEnd) Alignment.CenterStart else Alignment.CenterEnd)
-                .padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-        ) {
-            val iconAlpha = (fraction * 3f).coerceAtMost(1f)
-            Icon(
-                imageVector        = if (isStartToEnd) Icons.Rounded.Check else Icons.Rounded.Delete,
-                contentDescription = null,
-                tint               = Color.White.copy(alpha = iconAlpha),
-                modifier           = Modifier.size(26.dp),
-            )
-            // 3 patas aparecem em cascata conforme o fraction cresce
-            repeat(3) { i ->
-                val pawAlpha = ((fraction - 0.06f * (i + 1)) * 5f).coerceIn(0f, 0.75f)
-                Icon(
-                    imageVector        = Icons.Rounded.Pets,
-                    contentDescription = null,
-                    tint               = Color.White.copy(alpha = pawAlpha),
-                    modifier           = Modifier.size(if (i == 0) 20.dp else if (i == 1) 16.dp else 12.dp),
-                )
-            }
-        }
-    }
-}
-
