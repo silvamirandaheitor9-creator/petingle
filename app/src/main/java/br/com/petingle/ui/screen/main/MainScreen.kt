@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -225,14 +225,14 @@ private fun StartIoBanner() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+            .height(50.dp)
             .background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center,
     ) {
         AndroidView(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
+                .height(50.dp),
             factory = { context -> Banner(context) },
         )
     }
