@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.petingle.data.datastore.UserPreferencesRepository
@@ -24,10 +25,19 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.Properties
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 
 // ── Eventos de UI para o ProfileScreen ────────────────────────────────────────
@@ -38,6 +48,13 @@ sealed class ProfileUiEvent {
     data class ImportError(val msg: String)       : ProfileUiEvent()
     object DeleteSuccess                          : ProfileUiEvent()
 }
+
+private data class PackagedBackup(
+    val directory: File,
+    val database: File,
+    val profileProperties: File?,
+    val profilePhoto: File?,
+)
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -126,11 +143,23 @@ class ProfileViewModel @Inject constructor(
                 exportDb.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null).close()
                 exportDb.close()
 
+                val profilePhoto = File(prefs.profilePhotoPath.first())
+                val profileProperties = Properties().apply {
+                    setProperty(
+                        "user_name_base64",
+                        Base64.encodeToString(
+                            prefs.userName.first().toByteArray(Charsets.UTF_8),
+                            Base64.NO_WRAP,
+                        ),
+                    )
+                    setProperty("has_profile_photo", profilePhoto.isFile.toString())
+                }
+
                 val treeDocId = DocumentsContract.getTreeDocumentId(treeUri)
                 val parentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, treeDocId)
                 val docUri = DocumentsContract.createDocument(
                     contentResolver, parentUri,
-                    "application/octet-stream", "petingle_backup.db",
+                    "application/zip", "petingle_backup.petingle",
                 ) ?: run {
                     tempDir.deleteRecursively()
                     _events.emit(ProfileUiEvent.ExportError(
@@ -139,7 +168,21 @@ class ProfileViewModel @Inject constructor(
                 }
 
                 contentResolver.openOutputStream(docUri)?.use { out ->
-                    tempDb.inputStream().use { it.copyTo(out) }
+                    ZipOutputStream(BufferedOutputStream(out)).use { zip ->
+                        zip.putNextEntry(ZipEntry("petingle.db"))
+                        tempDb.inputStream().use { it.copyTo(zip) }
+                        zip.closeEntry()
+
+                        zip.putNextEntry(ZipEntry("profile.properties"))
+                        profileProperties.store(zip, "PetIngle profile backup")
+                        zip.closeEntry()
+
+                        if (profilePhoto.isFile) {
+                            zip.putNextEntry(ZipEntry("profile_photo.jpg"))
+                            profilePhoto.inputStream().use { it.copyTo(zip) }
+                            zip.closeEntry()
+                        }
+                    }
                 }
 
                 tempDir.deleteRecursively()
@@ -164,8 +207,15 @@ class ProfileViewModel @Inject constructor(
                     return@launch
                 }
 
+                val packagedBackup = if (isPackagedBackup(tempFile)) {
+                    extractPackagedBackup(tempFile)
+                } else {
+                    null
+                }
+                val sourceDatabase = packagedBackup?.database ?: tempFile
+
                 val src = SQLiteDatabase.openDatabase(
-                    tempFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY,
+                    sourceDatabase.absolutePath, null, SQLiteDatabase.OPEN_READONLY,
                 )
 
                 if (!merge) db.clearAllTables()
@@ -259,12 +309,87 @@ class ProfileViewModel @Inject constructor(
                 }
 
                 src.close()
+
+                packagedBackup?.let { restoreProfileData(it) }
+
+                packagedBackup?.directory?.deleteRecursively()
                 tempFile.delete()
                 _events.emit(ProfileUiEvent.ImportSuccess)
             } catch (e: Exception) {
                 _events.emit(ProfileUiEvent.ImportError(
                     e.localizedMessage ?: "Erro ao importar backup."))
             }
+        }
+    }
+
+    private fun isPackagedBackup(file: File): Boolean =
+        FileInputStream(file).use { input ->
+            input.read() == 'P'.code &&
+                input.read() == 'K'.code &&
+                input.read() == 3 &&
+                input.read() == 4
+        }
+
+    private fun extractPackagedBackup(archive: File): PackagedBackup {
+        val directory = File(context.cacheDir, "petingle_packaged_import")
+        directory.deleteRecursively()
+        directory.mkdirs()
+
+        var database: File? = null
+        var profileProperties: File? = null
+        var profilePhoto: File? = null
+
+        ZipInputStream(BufferedInputStream(FileInputStream(archive))).use { zip ->
+            var entry = zip.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory) {
+                    val destination = when (entry.name) {
+                        "petingle.db" -> File(directory, "petingle.db").also { database = it }
+                        "profile.properties" -> File(directory, "profile.properties").also { profileProperties = it }
+                        "profile_photo.jpg" -> File(directory, "profile_photo.jpg").also { profilePhoto = it }
+                        else -> null
+                    }
+                    destination?.let { target ->
+                        FileOutputStream(target).use { output -> zip.copyTo(output) }
+                    }
+                }
+                zip.closeEntry()
+                entry = zip.nextEntry
+            }
+        }
+
+        return PackagedBackup(
+            directory = directory,
+            database = requireNotNull(database) { "Backup PetIngle sem banco de dados." },
+            profileProperties = profileProperties,
+            profilePhoto = profilePhoto,
+        )
+    }
+
+    private suspend fun restoreProfileData(backup: PackagedBackup) {
+        val properties = backup.profileProperties?.let { file ->
+            Properties().also { props ->
+                FileInputStream(file).use { props.load(it) }
+            }
+        }
+
+        val encodedName = properties?.getProperty("user_name_base64")
+        if (encodedName != null) {
+            val name = String(Base64.decode(encodedName, Base64.DEFAULT), Charsets.UTF_8)
+            prefs.setUserName(name)
+        }
+
+        val hasPhoto = properties?.getProperty("has_profile_photo") == "true"
+        if (hasPhoto && backup.profilePhoto?.isFile == true) {
+            val profileDirectory = File(context.filesDir, "profile").apply { mkdirs() }
+            val destination = File(profileDirectory, "profile_photo.jpg")
+            backup.profilePhoto.inputStream().use { input ->
+                destination.outputStream().use { output -> input.copyTo(output) }
+            }
+            prefs.setProfilePhotoPath(destination.absolutePath)
+        } else if (!hasPhoto) {
+            File(context.filesDir, "profile/profile_photo.jpg").delete()
+            prefs.setProfilePhotoPath("")
         }
     }
 

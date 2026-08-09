@@ -324,28 +324,28 @@ fun ProfileScreen(
 
             // ── Hero header ───────────────────────────────────────────────────
             ProfileHeroHeader(
-                    userName      = userName,
-                    photoPath     = profilePhotoPath,
-                    petCount      = petCount,
-                    diaryCount    = diaryCount,
-                    reminderCount = reminderCount,
-                    isDark        = isDark,
-                    compact       = true,
-                    editingName   = editingName,
-                    nameInput     = nameInput,
-                    onNameInputChange = { nameInput = it },
-                    onEditToggle  = { editingName = !editingName },
-                    onNameSave    = {
-                        viewModel.setUserName(nameInput)
-                        focusManager.clearFocus()
-                        editingName = false
-                        scope.launch { snackbarState.showSnackbar("Nome salvo! 🐾") }
-                    },
-                    onPhotoClick  = {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    },
+                userName      = userName,
+                photoPath     = profilePhotoPath,
+                petCount      = petCount,
+                diaryCount    = diaryCount,
+                reminderCount = reminderCount,
+                isDark        = isDark,
+                compact       = true,
+                editingName   = editingName,
+                nameInput     = nameInput,
+                onNameInputChange = { nameInput = it },
+                onEditToggle  = { editingName = !editingName },
+                onNameSave    = {
+                    viewModel.setUserName(nameInput)
+                    focusManager.clearFocus()
+                    editingName = false
+                    scope.launch { snackbarState.showSnackbar("Nome salvo! 🐾") }
+                },
+                onPhotoClick  = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
             )
 
             // ── Seções compactas, sem rolagem ────────────────────────────────
@@ -746,7 +746,7 @@ private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Exportar backup", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                    Text("Salva seus dados num arquivo .db", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                     Text("Salva dados, nome e foto de perfil", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                 }
                 Icon(Icons.Rounded.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), modifier = Modifier.size(20.dp))
             }
@@ -772,7 +772,7 @@ private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Importar backup", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                    Text("Restaura dados de um arquivo .db", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                     Text("Restaura dados, nome e foto de perfil", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                 }
                 Icon(Icons.Rounded.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), modifier = Modifier.size(20.dp))
             }
