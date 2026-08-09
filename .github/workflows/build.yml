@@ -53,26 +53,23 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      # ── Release (signed ou unsigned) ─────────────────────────────────────
-      - name: Build Release APK
-        run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/petingle-release.p12
-            ./gradlew assembleRelease \
-              -Pandroid.injected.signing.store.file=$RUNNER_TEMP/petingle-release.p12 \
-              -Pandroid.injected.signing.store.password=${{ secrets.STORE_PASSWORD }} \
-              -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
-              -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }} \
-              --stacktrace
-          else
-            echo "Secrets de assinatura não configuradas. Gerando release não assinado..."
-            ./gradlew assembleRelease --stacktrace
-          fi
+      # ── Release (signed) ─────────────────────────────────────────────────
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/petingle-release.p12
 
-      - name: Upload Release APK
+      - name: Build Release APK (signed)
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$RUNNER_TEMP/petingle-release.p12 \
+            -Pandroid.injected.signing.store.password=${{ secrets.STORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }} \
+            --stacktrace
+
+      - name: Upload Release APK (signed)
         uses: actions/upload-artifact@v4
         with:
-          name: petingle-release
-          path: app/build/outputs/apk/release/*.apk
+          name: petingle-release-signed
+          path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 7

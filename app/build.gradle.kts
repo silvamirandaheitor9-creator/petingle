@@ -26,8 +26,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -111,10 +111,4 @@ dependencies {
 
     // Coleções imutáveis — elimina instabilidade de List<T> no compilador do Compose
     implementation(libs.kotlinx.collections.immutable)
-
-    // Start.io — SDK de anúncios in-app
-    implementation(libs.startio.inapp.sdk)
-
-    // JSON
-    implementation("org.json:json:20240303")
 }

@@ -10,12 +10,10 @@ import br.com.petingle.data.db.entity.DiaryEntry
 import br.com.petingle.data.db.entity.HealthRecord
 import br.com.petingle.data.db.entity.Pet
 import br.com.petingle.data.db.entity.Reminder
-import br.com.petingle.data.db.entity.UserMetadata
-import br.com.petingle.data.db.dao.UserMetadataDao
 
 @Database(
-    entities = [Pet::class, Reminder::class, DiaryEntry::class, HealthRecord::class, UserMetadata::class],
-    version = 3, // v3: adicionada tabela user_metadata para backup unificado
+    entities = [Pet::class, Reminder::class, DiaryEntry::class, HealthRecord::class],
+    version = 2, // v2: adicionados índices em petId (health_records, diary_entries, reminders)
     exportSchema = true,
 )
 abstract class PetIngleDatabase : RoomDatabase() {
@@ -23,5 +21,4 @@ abstract class PetIngleDatabase : RoomDatabase() {
     abstract fun reminderDao(): ReminderDao
     abstract fun diaryDao(): DiaryDao
     abstract fun healthRecordDao(): HealthRecordDao
-    abstract fun userMetadataDao(): UserMetadataDao
 }
