@@ -45,18 +45,13 @@ import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -155,18 +150,13 @@ fun RemindersScreen(
                         initialOffsetY = { it / 4 },
                     ),
                 ) {
-                    ReminderSwipeContainer(
-                        onDeleteDirect    = { viewModel.deleteReminder(reminder) },
+                    ReminderCard(
+                        reminder          = reminder,
+                        pets              = pets,
+                        onEdit            = { onNavigateToNewReminder(reminder.id) },
+                        onDelete          = { viewModel.deleteReminder(reminder) },
                         onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                    ) {
-                        ReminderCard(
-                            reminder          = reminder,
-                            pets              = pets,
-                            onEdit            = { onNavigateToNewReminder(reminder.id) },
-                            onDelete          = { viewModel.deleteReminder(reminder) },
-                            onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                        )
-                    }
+                    )
                 }
             }
         }
@@ -190,19 +180,14 @@ fun RemindersScreen(
                 ) {
                     Column {
                         historico.forEach { reminder ->
-                            ReminderSwipeContainer(
-                                onDeleteDirect    = { viewModel.deleteReminder(reminder) },
+                            ReminderCard(
+                                reminder          = reminder,
+                                pets              = pets,
+                                onEdit            = { onNavigateToNewReminder(reminder.id) },
+                                onDelete          = { viewModel.deleteReminder(reminder) },
                                 onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                            ) {
-                                ReminderCard(
-                                    reminder          = reminder,
-                                    pets              = pets,
-                                    onEdit            = { onNavigateToNewReminder(reminder.id) },
-                                    onDelete          = { viewModel.deleteReminder(reminder) },
-                                    onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                                    isHistorico       = true,
-                                )
-                            }
+                                isHistorico       = true,
+                            )
                         }
                     }
                 }
@@ -484,6 +469,20 @@ private fun ReminderCard(
 
             // Ações
             Column(horizontalAlignment = Alignment.End) {
+                IconButton(
+                    onClick = onToggleCompleted,
+                    modifier = Modifier.size(36.dp),
+                ) {
+                    Icon(
+                        Icons.Rounded.Check,
+                        contentDescription = if (reminder.isCompleted) "Marcar como pendente" else "Marcar como concluído",
+                        modifier = Modifier.size(20.dp),
+                        tint = if (reminder.isCompleted)
+                            Color(0xFF4CAF50)
+                        else
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
+                    )
+                }
                 IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
                     Icon(
                         Icons.Rounded.Edit,
@@ -551,79 +550,5 @@ fun String.toRecurrenceLabel(): String = when (this) {
     "weekly"  -> "Repete semanalmente"
     "monthly" -> "Repete mensalmente"
     else      -> ""
-}
-
-// ─── Swipe container com rastro de pegada (10.18) ─────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ReminderSwipeContainer(
-    onDeleteDirect: () -> Unit,
-    onToggleCompleted: () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onToggleCompleted()
-                    false  // snaps back; card atualiza estado via recomposição
-                }
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onDeleteDirect()
-                    true   // confirma dismiss — item some via DB flow
-                }
-                else -> false
-            }
-        },
-        positionalThreshold = { total -> total * 0.40f },
-    )
-    SwipeToDismissBox(
-        state             = dismissState,
-        backgroundContent = { PawTrailBackground(dismissState) },
-    ) {
-        content()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PawTrailBackground(state: SwipeToDismissBoxState) {
-    val isStartToEnd = state.currentValue == SwipeToDismissBoxValue.StartToEnd ||
-        state.targetValue  == SwipeToDismissBoxValue.StartToEnd
-    val fraction = state.progress
-    val bgColor  = if (isStartToEnd) OrangePrimary else Color(0xFFE53935)
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bgColor.copy(alpha = (fraction * 2.5f).coerceAtMost(0.9f))),
-    ) {
-        Row(
-            modifier = Modifier
-                .align(if (isStartToEnd) Alignment.CenterStart else Alignment.CenterEnd)
-                .padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-        ) {
-            val iconAlpha = (fraction * 3f).coerceAtMost(1f)
-            Icon(
-                imageVector        = if (isStartToEnd) Icons.Rounded.Check else Icons.Rounded.Delete,
-                contentDescription = null,
-                tint               = Color.White.copy(alpha = iconAlpha),
-                modifier           = Modifier.size(26.dp),
-            )
-            // 3 patas aparecem em cascata conforme o fraction cresce
-            repeat(3) { i ->
-                val pawAlpha = ((fraction - 0.06f * (i + 1)) * 5f).coerceIn(0f, 0.75f)
-                Icon(
-                    imageVector        = Icons.Rounded.Pets,
-                    contentDescription = null,
-                    tint               = Color.White.copy(alpha = pawAlpha),
-                    modifier           = Modifier.size(if (i == 0) 20.dp else if (i == 1) 16.dp else 12.dp),
-                )
-            }
-        }
-    }
 }
 
