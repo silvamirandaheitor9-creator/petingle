@@ -318,8 +318,8 @@ fun ProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+                .padding(bottom = 8.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
 
             // ── Hero header ───────────────────────────────────────────────────
@@ -330,7 +330,7 @@ fun ProfileScreen(
                 diaryCount    = diaryCount,
                 reminderCount = reminderCount,
                 isDark        = isDark,
-                compact       = true,
+                compact       = false,
                 editingName   = editingName,
                 nameInput     = nameInput,
                 onNameInputChange = { nameInput = it },
@@ -348,7 +348,7 @@ fun ProfileScreen(
                 },
             )
 
-            // ── Seções compactas, sem rolagem ────────────────────────────────
+            // ── Seções dimensionadas para preencher a tela, sem rolagem ─────
             Box {
                 StaggerSection(visible = sectionVisible[0].value, index = 0) {
                     AppearanceCard(isDark = isDark, onToggle = { themeViewModel.setDarkTheme(it) })
