@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -316,20 +315,22 @@ fun ProfileScreen(
 
     // ── Layout principal ──────────────────────────────────────────────────────
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 100.dp),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
 
             // ── Hero header ───────────────────────────────────────────────────
-            item {
-                ProfileHeroHeader(
+            ProfileHeroHeader(
                     userName      = userName,
                     photoPath     = profilePhotoPath,
                     petCount      = petCount,
                     diaryCount    = diaryCount,
                     reminderCount = reminderCount,
                     isDark        = isDark,
+                    compact       = true,
                     editingName   = editingName,
                     nameInput     = nameInput,
                     onNameInputChange = { nameInput = it },
@@ -345,16 +346,15 @@ fun ProfileScreen(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
                     },
-                )
-            }
+            )
 
-            // ── Seções com stagger ────────────────────────────────────────────
-            item {
+            // ── Seções compactas, sem rolagem ────────────────────────────────
+            Box {
                 StaggerSection(visible = sectionVisible[0].value, index = 0) {
                     AppearanceCard(isDark = isDark, onToggle = { themeViewModel.setDarkTheme(it) })
                 }
             }
-            item {
+            Box {
                 StaggerSection(visible = sectionVisible[1].value, index = 1) {
                     BackupCard(
                         onExport = { exportLauncher.launch(null) },
@@ -362,7 +362,7 @@ fun ProfileScreen(
                     )
                 }
             }
-            item {
+            Box {
                 StaggerSection(visible = sectionVisible[2].value, index = 2) {
                     LegalExpandableCard(
                         title   = "Política de Privacidade",
@@ -371,7 +371,7 @@ fun ProfileScreen(
                     )
                 }
             }
-            item {
+            Box {
                 StaggerSection(visible = sectionVisible[3].value, index = 3) {
                     LegalExpandableCard(
                         title   = "Termos de Uso",
@@ -380,7 +380,7 @@ fun ProfileScreen(
                     )
                 }
             }
-            item {
+            Box {
                 StaggerSection(visible = sectionVisible[4].value, index = 4) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         LegalExpandableCard(
@@ -423,6 +423,7 @@ private fun ProfileHeroHeader(
     diaryCount       : Int,
     reminderCount    : Int,
     isDark           : Boolean,
+    compact          : Boolean = false,
     editingName      : Boolean,
     nameInput        : String,
     onNameInputChange: (String) -> Unit,
@@ -454,13 +455,16 @@ private fun ProfileHeroHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 28.dp),
+                    .padding(
+                        horizontal = if (compact) 16.dp else 24.dp,
+                        vertical = if (compact) 12.dp else 28.dp,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Avatar com foto, inicial do nome, ou mascote padrão
                 Box(
                     modifier         = Modifier
-                        .size(72.dp)
+                        .size(if (compact) 52.dp else 72.dp)
                         .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Color.White)
@@ -477,7 +481,8 @@ private fun ProfileHeroHeader(
                     } else if (userName.isNotBlank()) {
                         Text(
                             text       = userName.trim().first().uppercase(),
-                            style      = MaterialTheme.typography.headlineMedium,
+                            style      = if (compact) MaterialTheme.typography.titleLarge
+                                         else MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.ExtraBold,
                             color      = OrangePrimary,
                         )
@@ -493,7 +498,7 @@ private fun ProfileHeroHeader(
                     Box(
                         modifier         = Modifier
                             .align(Alignment.BottomEnd)
-                            .size(22.dp)
+                            .size(if (compact) 18.dp else 22.dp)
                             .background(OrangePrimary, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -501,7 +506,7 @@ private fun ProfileHeroHeader(
                             imageVector        = Icons.Rounded.Edit,
                             contentDescription = "Alterar foto",
                             tint               = Color.White,
-                            modifier           = Modifier.size(12.dp),
+                            modifier           = Modifier.size(if (compact) 10.dp else 12.dp),
                         )
                     }
                 }
@@ -548,7 +553,8 @@ private fun ProfileHeroHeader(
                         Text(
                             text       = if (userName.isNotBlank()) "Olá, ${userName.trim()}! 👋"
                                          else "Como podemos te chamar?",
-                            style      = MaterialTheme.typography.titleLarge,
+                        style      = if (compact) MaterialTheme.typography.titleMedium
+                                     else MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.ExtraBold,
                             color      = Color.White,
                         )
@@ -557,17 +563,20 @@ private fun ProfileHeroHeader(
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.75f),
                         )
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(if (compact) 4.dp else 8.dp))
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(24.dp))
                                 .background(Color.White.copy(alpha = 0.18f))
                                 .clickable(onClick = onEditToggle)
-                                .padding(horizontal = 12.dp, vertical = 5.dp),
+                                .padding(
+                                    horizontal = if (compact) 10.dp else 12.dp,
+                                    vertical = if (compact) 3.dp else 5.dp,
+                                ),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            Icon(Icons.Rounded.Edit, null, tint = Color.White, modifier = Modifier.size(13.dp))
+                            Icon(Icons.Rounded.Edit, null, tint = Color.White, modifier = Modifier.size(12.dp))
                             Text("Editar nome", style = MaterialTheme.typography.labelSmall, color = Color.White)
                         }
                     }
@@ -579,7 +588,7 @@ private fun ProfileHeroHeader(
         Card(
             modifier  = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = if (compact) 12.dp else 20.dp),
             shape     = RoundedCornerShape(20.dp),
             colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(8.dp),
@@ -587,14 +596,14 @@ private fun ProfileHeroHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(vertical = if (compact) 8.dp else 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString())
+                StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString(), compact = compact)
                 StatDivider()
-                StatChip(icon = Icons.Rounded.AutoStories,   label = "Memórias",  value = diaryCount.toString())
+                StatChip(icon = Icons.Rounded.AutoStories,   label = "Memórias",  value = diaryCount.toString(), compact = compact)
                 StatDivider()
-                StatChip(icon = Icons.Rounded.Notifications, label = "Lembretes", value = reminderCount.toString())
+                StatChip(icon = Icons.Rounded.Notifications, label = "Lembretes", value = reminderCount.toString(), compact = compact)
             }
         }
 
@@ -603,19 +612,24 @@ private fun ProfileHeroHeader(
 }
 
 @Composable
-private fun StatChip(icon: ImageVector, label: String, value: String) {
+private fun StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(if (compact) 28.dp else 40.dp)
                 .clip(CircleShape)
                 .background(OrangePrimary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(if (compact) 15.dp else 20.dp))
         }
-        Spacer(Modifier.height(4.dp))
-        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+        Spacer(Modifier.height(if (compact) 1.dp else 4.dp))
+        Text(
+            value,
+            style = if (compact) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
     }
 }
@@ -648,8 +662,8 @@ private fun StaggerSection(visible: Boolean, index: Int, content: @Composable ()
     Box(
         modifier = Modifier
             .graphicsLayer { this.alpha = alpha.value; translationY = offsetY.value }
-            .padding(horizontal = 16.dp)
-            .padding(top = 14.dp),
+            .padding(horizontal = 12.dp)
+            .padding(top = 3.dp),
     ) {
         content()
     }
@@ -709,7 +723,7 @@ private fun AppearanceCard(isDark: Boolean, onToggle: (Boolean) -> Unit) {
 @Composable
 private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
     ProfileSectionCard(title = "Backup e Restauração", icon = Icons.Rounded.Backup) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             // Exportar
             Row(
                 modifier = Modifier
@@ -717,18 +731,18 @@ private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
                     .clip(RoundedCornerShape(16.dp))
                     .border(1.5.dp, OrangePrimary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                     .clickable(onClick = onExport)
-                    .padding(14.dp),
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(28.dp)
                         .clip(CircleShape)
                         .background(OrangePrimary.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Rounded.Upload, null, tint = OrangePrimary, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Rounded.Upload, null, tint = OrangePrimary, modifier = Modifier.size(15.dp))
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Exportar backup", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
@@ -743,18 +757,18 @@ private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
                     .clip(RoundedCornerShape(16.dp))
                     .border(1.5.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
                     .clickable(onClick = onImport)
-                    .padding(14.dp),
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(28.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Rounded.Download, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Rounded.Download, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.size(15.dp))
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Importar backup", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
@@ -782,18 +796,18 @@ private fun DangerCard(onDeleteClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onDeleteClick)
-                .padding(16.dp),
+                .padding(horizontal = 10.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(28.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Rounded.DeleteForever, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                Icon(Icons.Rounded.DeleteForever, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -835,7 +849,7 @@ private fun LegalExpandableCard(title: String, icon: ImageVector, content: Strin
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { expanded = !expanded }
-                    .padding(16.dp),
+                    .padding(horizontal = 10.dp, vertical = 9.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -845,14 +859,14 @@ private fun LegalExpandableCard(title: String, icon: ImageVector, content: Strin
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(28.dp)
                             .clip(CircleShape)
                             .background(OrangePrimary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(icon, null, tint = OrangePrimary, modifier = Modifier.size(18.dp))
+                        Icon(icon, null, tint = OrangePrimary, modifier = Modifier.size(15.dp))
                     }
-                    Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                    Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 }
                 Icon(
                     Icons.Rounded.ExpandMore,
@@ -898,21 +912,21 @@ private fun ProfileSectionCard(
         colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(2.dp),
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(28.dp)
                         .clip(CircleShape)
                         .background(OrangePrimary.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(icon, null, tint = OrangePrimary, modifier = Modifier.size(18.dp))
+                    Icon(icon, null, tint = OrangePrimary, modifier = Modifier.size(15.dp))
                 }
-                Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f))
             content()
