@@ -279,6 +279,7 @@ fun MainScreen(
  *
  * Ele fica em uma faixa própria, antes da NavigationBar, para que o Scaffold
  * reserve o espaço automaticamente e nenhum conteúdo ou ação fique encoberto.
+ * A altura fixa evita que o anúncio altere o layout quando carregar ou atualizar.
  */
 @Composable
 private fun StartIoBanner() {
@@ -294,6 +295,12 @@ private fun StartIoBanner() {
                 .fillMaxWidth()
                 .height(50.dp),
             factory = { context -> Banner(context) },
+            update = { banner ->
+                // O SDK mantém o carregamento e a atualização do anúncio.
+                // Não chamamos loadAd() aqui: esse bloco permanece montado ao
+                // trocar de aba e não dispara requisições a cada recomposição.
+                banner.contentDescription = "Anúncio"
+            },
         )
     }
 }
