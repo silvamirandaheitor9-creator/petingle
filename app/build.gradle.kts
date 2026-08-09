@@ -26,8 +26,11 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // O R8 do AGP 8.5 falha com ConcurrentModificationException no
+            // pipeline atual; mantenha o release compilável até a atualização
+            // coordenada da ferramenta de minificação.
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
