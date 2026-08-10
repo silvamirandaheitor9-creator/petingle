@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -315,46 +316,45 @@ fun ProfileScreen(
 
     // ── Layout principal ──────────────────────────────────────────────────────
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+                .padding(horizontal = 8.dp),
+            contentPadding = PaddingValues(top = 4.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-
-            // ── Hero header ───────────────────────────────────────────────────
-            ProfileHeroHeader(
-                userName      = userName,
-                photoPath     = profilePhotoPath,
-                petCount      = petCount,
-                diaryCount    = diaryCount,
-                reminderCount = reminderCount,
-                isDark        = isDark,
-                compact       = false,
-                editingName   = editingName,
-                nameInput     = nameInput,
-                onNameInputChange = { nameInput = it },
-                onEditToggle  = { editingName = !editingName },
-                onNameSave    = {
-                    viewModel.setUserName(nameInput)
-                    focusManager.clearFocus()
-                    editingName = false
-                    scope.launch { snackbarState.showSnackbar("Nome salvo! 🐾") }
-                },
-                onPhotoClick  = {
-                    photoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                },
-            )
-
-            // ── Seções dimensionadas para preencher a tela, sem rolagem ─────
-            Box {
+            item {
+                ProfileHeroHeader(
+                    userName      = userName,
+                    photoPath     = profilePhotoPath,
+                    petCount      = petCount,
+                    diaryCount    = diaryCount,
+                    reminderCount = reminderCount,
+                    isDark        = isDark,
+                    compact       = false,
+                    editingName   = editingName,
+                    nameInput     = nameInput,
+                    onNameInputChange = { nameInput = it },
+                    onEditToggle  = { editingName = !editingName },
+                    onNameSave    = {
+                        viewModel.setUserName(nameInput)
+                        focusManager.clearFocus()
+                        editingName = false
+                        scope.launch { snackbarState.showSnackbar("Nome salvo!") }
+                    },
+                    onPhotoClick  = {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                )
+            }
+            item {
                 StaggerSection(visible = sectionVisible[0].value, index = 0) {
                     AppearanceCard(isDark = isDark, onToggle = { themeViewModel.setDarkTheme(it) })
                 }
             }
-            Box {
+            item {
                 StaggerSection(visible = sectionVisible[1].value, index = 1) {
                     BackupCard(
                         onExport = { exportLauncher.launch(null) },
@@ -362,7 +362,7 @@ fun ProfileScreen(
                     )
                 }
             }
-            Box {
+            item {
                 StaggerSection(visible = sectionVisible[2].value, index = 2) {
                     LegalExpandableCard(
                         title   = "Política de Privacidade",
@@ -371,7 +371,7 @@ fun ProfileScreen(
                     )
                 }
             }
-            Box {
+            item {
                 StaggerSection(visible = sectionVisible[3].value, index = 3) {
                     LegalExpandableCard(
                         title   = "Termos de Uso",
@@ -380,7 +380,7 @@ fun ProfileScreen(
                     )
                 }
             }
-            Box {
+            item {
                 StaggerSection(visible = sectionVisible[4].value, index = 4) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         LegalExpandableCard(
@@ -388,7 +388,6 @@ fun ProfileScreen(
                             icon    = Icons.Rounded.Info,
                             content = ABOUT_TEXT,
                         )
-                        // Apagar dados — botão destrutivo isolado no fundo
                         DangerCard(onDeleteClick = { showDeleteDialog1 = true })
                     }
                 }

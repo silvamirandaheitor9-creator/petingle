@@ -126,13 +126,15 @@ fun MainScreen(
         if (isRewardedAdLoading || preparedRewardedAd != null) return
         isRewardedAdLoading = true
         rewardedAdUnavailable = false
-        StartAppAd(context).also { rewardedAd ->
+        val rewardedAd = StartAppAd(context.applicationContext)
+        try {
             rewardedAd.loadAd(
                 AdMode.REWARDED_VIDEO,
                 object : AdEventListener {
                     override fun onReceiveAd(ad: Ad) {
                         preparedRewardedAd = rewardedAd
                         isRewardedAdLoading = false
+                        rewardedAdUnavailable = false
                     }
 
                     override fun onFailedToReceiveAd(ad: Ad?) {
@@ -142,11 +144,11 @@ fun MainScreen(
                     }
                 },
             )
+        } catch (_: Exception) {
+            preparedRewardedAd = null
+            isRewardedAdLoading = false
+            rewardedAdUnavailable = true
         }
-    }
-
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        loadRewardedAd()
     }
 
     // ── ViewModel de Lembretes ────────────────────────────────────────────────
@@ -249,7 +251,6 @@ fun MainScreen(
                                 } else {
                                     rewardedAdUnavailable = false
                                     showPetLimitDialog = true
-                                    loadRewardedAd()
                                 }
                             }
                             MainTab.DIARY     -> showAddDiaryEntry = true
@@ -260,6 +261,12 @@ fun MainScreen(
                 )
             }
         }
+    }
+
+    // Carrega sob demanda, somente quando o usuário solicita o desbloqueio.
+    // Cada nova tentativa cria uma instância limpa do anúncio.
+    androidx.compose.runtime.LaunchedEffect(showPetLimitDialog) {
+        if (showPetLimitDialog) loadRewardedAd()
     }
 
     if (showPetLimitDialog) {
@@ -279,7 +286,7 @@ fun MainScreen(
                         )
                     } else if (rewardedAdUnavailable) {
                         Text(
-                            "O anúncio ainda não está disponível. Tente novamente em instantes.",
+                            "Ainda não encontramos uma oferta agora. Toque em tentar novamente para fazer uma nova busca.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
@@ -336,6 +343,7 @@ fun MainScreen(
                     Text(
                         when {
                             isRewardedAdLoading -> "Aguarde..."
+                            preparedRewardedAd == null && rewardedAdUnavailable -> "Tentar novamente"
                             preparedRewardedAd == null -> "Preparar anúncio"
                             else -> "Assistir anúncio"
                         },

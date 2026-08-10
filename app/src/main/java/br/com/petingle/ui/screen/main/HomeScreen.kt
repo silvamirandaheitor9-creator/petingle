@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -479,53 +480,59 @@ private fun EmptyPetsSection(
     onAddPet: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier              = modifier.fillMaxWidth(),
-        horizontalAlignment   = Alignment.CenterHorizontally,
-        verticalArrangement   = Arrangement.spacedBy(12.dp),
-    ) {
-        Image(
-            painter            = painterResource(R.drawable.onboarding_1_boasvindas),
-            contentDescription = null,
-            modifier           = Modifier.fillMaxWidth(0.62f),
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text       = "Seus pets estão esperando por você!",
-            style      = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color      = MaterialTheme.colorScheme.onBackground,
-            textAlign  = TextAlign.Center,
-        )
-        Text(
-            text      = "Adicione o primeiro pet e comece a cuidar com muito carinho.",
-            style     = MaterialTheme.typography.bodyMedium,
-            color     = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.60f),
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(4.dp))
-        Button(
-            onClick  = onAddPet,
-            modifier = Modifier
-                .fillMaxWidth(0.80f)
-                .height(52.dp),
-            shape    = RoundedCornerShape(50.dp),
-            colors   = ButtonDefaults.buttonColors(
-                containerColor = OrangePrimary,
-                contentColor   = Color.White,
-            ),
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val compact = maxHeight < 440.dp
+        Column(
+            modifier              = Modifier.fillMaxWidth(),
+            horizontalAlignment   = Alignment.CenterHorizontally,
+            verticalArrangement   = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
         ) {
-            Icon(
-                imageVector        = Icons.Rounded.Pets,
+            Image(
+                painter            = painterResource(R.drawable.onboarding_1_boasvindas),
                 contentDescription = null,
-                modifier           = Modifier.size(18.dp),
+                modifier           = Modifier.fillMaxWidth(if (compact) 0.46f else 0.54f),
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.height(if (compact) 0.dp else 4.dp))
             Text(
-                text       = "Adicionar meu primeiro pet",
-                style      = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
+                text       = "Seus pets estão esperando por você!",
+                style      = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color      = MaterialTheme.colorScheme.onBackground,
+                textAlign  = TextAlign.Center,
             )
+            Text(
+                text      = "Adicione o primeiro pet e comece a cuidar com muito carinho.",
+                style     = MaterialTheme.typography.bodyMedium,
+                color     = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.60f),
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(if (compact) 0.dp else 4.dp))
+            Button(
+                onClick  = onAddPet,
+                modifier = Modifier
+                    .fillMaxWidth(0.94f)
+                    .height(if (compact) 46.dp else 50.dp),
+                shape    = RoundedCornerShape(50.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                colors   = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor   = Color.White,
+                ),
+            ) {
+                Icon(
+                    imageVector        = Icons.Rounded.Pets,
+                    contentDescription = null,
+                    modifier           = Modifier.size(17.dp),
+                )
+                Spacer(Modifier.width(7.dp))
+                Text(
+                    text       = "Adicionar meu primeiro pet",
+                    style      = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines   = 1,
+                    softWrap   = false,
+                )
+            }
         }
     }
 }
