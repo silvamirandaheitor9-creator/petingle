@@ -102,23 +102,21 @@ fun RemindersScreen(
     val isEmpty = grouped.isEmpty()
     val selectedPetName = pets.firstOrNull { it.id == selectedPetId }?.name
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 120.dp),
-    ) {
-        // ── Chips de filtro por pet ────────────────────────────────────────────
-        if (pets.size > 1) {
-            item(key = "pet_filter") {
+    if (isEmpty) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (pets.size > 1) {
                 PetFilterChips(
                     pets = pets,
                     selectedPetId = selectedPetId,
                     onSelectPet = { viewModel.selectPet(it) },
                 )
             }
-        }
-
-        if (isEmpty) {
-            item(key = "empty_filtered_reminders") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center,
+            ) {
                 ReminderEmptyState(
                     selectedPetName = selectedPetName,
                     onClearFilter = if (selectedPetId != null) {
@@ -129,80 +127,95 @@ fun RemindersScreen(
                 )
             }
         }
-
-        // ── Seções: Hoje / Amanhã / Esta semana ───────────────────────────────
-        for (group in listOf(
-            ReminderGroup.HOJE,
-            ReminderGroup.AMANHA,
-            ReminderGroup.ESTA_SEMANA,
-        )) {
-            val items = grouped[group] ?: continue
-
-            item(key = "header_${group.name}") {
-                SectionHeader(label = group.label())
-            }
-
-            // Cards de lembrete com stagger escalonado por grupo
-            itemsIndexed(items, key = { _, r -> "reminder_${r.id}" }) { index, reminder ->
-                var shown by remember(reminder.id) { mutableStateOf(false) }
-                LaunchedEffect(reminder.id) {
-                    delay((index * 60L).coerceAtMost(360L))
-                    shown = true
-                }
-                AnimatedVisibility(
-                    visible = shown,
-                    enter   = fadeIn(tween(280)) + slideInVertically(
-                        animationSpec  = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness    = Spring.StiffnessMediumLow,
-                        ),
-                        initialOffsetY = { it / 4 },
-                    ),
-                ) {
-                    ReminderCard(
-                        reminder          = reminder,
-                        pets              = pets,
-                        onEdit            = { onNavigateToNewReminder(reminder.id) },
-                        onDelete          = { viewModel.deleteReminder(reminder) },
-                        onToggleCompleted = { viewModel.toggleCompleted(reminder) },
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 120.dp),
+        ) {
+            // ── Chips de filtro por pet ────────────────────────────────────────
+            if (pets.size > 1) {
+                item(key = "pet_filter") {
+                    PetFilterChips(
+                        pets = pets,
+                        selectedPetId = selectedPetId,
+                        onSelectPet = { viewModel.selectPet(it) },
                     )
                 }
             }
-        }
 
-        // ── Histórico (recolhível) ─────────────────────────────────────────────
-        val historico = grouped[ReminderGroup.HISTORICO]
-        if (!historico.isNullOrEmpty()) {
-            item(key = "header_historico") {
-                HistoricoHeader(
-                    count = historico.size,
-                    expanded = historicoExpanded,
-                    onToggle = { viewModel.toggleHistorico() },
-                )
+            // ── Seções: Hoje / Amanhã / Esta semana ───────────────────────────
+            for (group in listOf(
+                ReminderGroup.HOJE,
+                ReminderGroup.AMANHA,
+                ReminderGroup.ESTA_SEMANA,
+            )) {
+                val items = grouped[group] ?: continue
+
+                item(key = "header_${group.name}") {
+                    SectionHeader(label = group.label())
+                }
+
+                // Cards de lembrete com stagger escalonado por grupo
+                itemsIndexed(items, key = { _, r -> "reminder_${r.id}" }) { index, reminder ->
+                    var shown by remember(reminder.id) { mutableStateOf(false) }
+                    LaunchedEffect(reminder.id) {
+                        delay((index * 60L).coerceAtMost(360L))
+                        shown = true
+                    }
+                    AnimatedVisibility(
+                        visible = shown,
+                        enter   = fadeIn(tween(280)) + slideInVertically(
+                            animationSpec  = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness    = Spring.StiffnessMediumLow,
+                            ),
+                            initialOffsetY = { it / 4 },
+                        ),
+                    ) {
+                        ReminderCard(
+                            reminder          = reminder,
+                            pets              = pets,
+                            onEdit            = { onNavigateToNewReminder(reminder.id) },
+                            onDelete          = { viewModel.deleteReminder(reminder) },
+                            onToggleCompleted = { viewModel.toggleCompleted(reminder) },
+                        )
+                    }
+                }
             }
 
-            item(key = "historico_content") {
-                AnimatedVisibility(
-                    visible = historicoExpanded,
-                    enter = expandVertically(),
-                    exit = shrinkVertically(),
-                ) {
-                    Column {
-                        historico.forEach { reminder ->
-                            ReminderCard(
-                                reminder          = reminder,
-                                pets              = pets,
-                                onEdit            = { onNavigateToNewReminder(reminder.id) },
-                                onDelete          = { viewModel.deleteReminder(reminder) },
-                                onToggleCompleted = { viewModel.toggleCompleted(reminder) },
-                                isHistorico       = true,
-                            )
+            // ── Histórico (recolhível) ─────────────────────────────────────────
+            val historico = grouped[ReminderGroup.HISTORICO]
+            if (!historico.isNullOrEmpty()) {
+                item(key = "header_historico") {
+                    HistoricoHeader(
+                        count = historico.size,
+                        expanded = historicoExpanded,
+                        onToggle = { viewModel.toggleHistorico() },
+                    )
+                }
+
+                item(key = "historico_content") {
+                    AnimatedVisibility(
+                        visible = historicoExpanded,
+                        enter = expandVertically(),
+                        exit = shrinkVertically(),
+                    ) {
+                        Column {
+                            historico.forEach { reminder ->
+                                ReminderCard(
+                                    reminder          = reminder,
+                                    pets              = pets,
+                                    onEdit            = { onNavigateToNewReminder(reminder.id) },
+                                    onDelete          = { viewModel.deleteReminder(reminder) },
+                                    onToggleCompleted = { viewModel.toggleCompleted(reminder) },
+                                    isHistorico       = true,
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 }
 
@@ -216,7 +229,7 @@ private fun ReminderEmptyState(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 40.dp, vertical = 56.dp),
+            .padding(horizontal = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {

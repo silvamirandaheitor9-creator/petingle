@@ -118,8 +118,36 @@ fun MainScreen(
     val petLimit by petsViewModel.petLimit.collectAsState()
     val context = LocalContext.current
     var showPetLimitDialog by remember { mutableStateOf(false) }
+    var preparedRewardedAd by remember { mutableStateOf<StartAppAd?>(null) }
     var isRewardedAdLoading by rememberSaveable { mutableStateOf(false) }
     var rewardedAdUnavailable by rememberSaveable { mutableStateOf(false) }
+
+    fun loadRewardedAd() {
+        if (isRewardedAdLoading || preparedRewardedAd != null) return
+        isRewardedAdLoading = true
+        rewardedAdUnavailable = false
+        StartAppAd(context).also { rewardedAd ->
+            rewardedAd.loadAd(
+                AdMode.REWARDED_VIDEO,
+                object : AdEventListener {
+                    override fun onReceiveAd(ad: Ad) {
+                        preparedRewardedAd = rewardedAd
+                        isRewardedAdLoading = false
+                    }
+
+                    override fun onFailedToReceiveAd(ad: Ad?) {
+                        preparedRewardedAd = null
+                        isRewardedAdLoading = false
+                        rewardedAdUnavailable = true
+                    }
+                },
+            )
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        loadRewardedAd()
+    }
 
     // ── ViewModel de Lembretes ────────────────────────────────────────────────
     val reminderViewModel: ReminderViewModel = hiltViewModel()
@@ -149,7 +177,7 @@ fun MainScreen(
             PetIngleTopBar(
                 title    = if (selectedTabIndex == 0) greeting else currentTab.label,
                 subtitle = if (selectedTabIndex == 0) warmPhrase else null,
-                badge    = if (currentTab == MainTab.PETS) "$petCount" else null,
+                badge    = if (currentTab == MainTab.PETS) "$petCount de $petLimit" else null,
             )
         },
         bottomBar = {
@@ -221,6 +249,7 @@ fun MainScreen(
                                 } else {
                                     rewardedAdUnavailable = false
                                     showPetLimitDialog = true
+                                    loadRewardedAd()
                                 }
                             }
                             MainTab.DIARY     -> showAddDiaryEntry = true
@@ -244,13 +273,13 @@ fun MainScreen(
                     )
                     if (isRewardedAdLoading) {
                         Text(
-                            "Carregando anúncio...",
+                            "Preparando anúncio...",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                         )
                     } else if (rewardedAdUnavailable) {
                         Text(
-                            "Não há anúncio disponível agora. Tente novamente em instantes.",
+                            "O anúncio ainda não está disponível. Tente novamente em instantes.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
@@ -260,54 +289,57 @@ fun MainScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        val rewardedAd = preparedRewardedAd
+                        if (rewardedAd == null) {
+                            loadRewardedAd()
+                            return@Button
+                        }
+
+                        preparedRewardedAd = null
                         isRewardedAdLoading = true
-                        rewardedAdUnavailable = false
-                        val rewardedAd = StartAppAd(context)
                         var rewardGranted = false
                         rewardedAd.setVideoListener {
                             rewardGranted = true
                             isRewardedAdLoading = false
                             showPetLimitDialog = false
                             petsViewModel.unlockMorePets()
+                            loadRewardedAd()
                         }
-                        rewardedAd.loadAd(
-                            AdMode.REWARDED_VIDEO,
-                            object : AdEventListener {
-                                override fun onReceiveAd(ad: Ad) {
-                                    if (!rewardedAd.showAd(
-                                            object : AdDisplayListener {
-                                                override fun adDisplayed(ad: Ad) = Unit
+                        if (!rewardedAd.showAd(
+                                object : AdDisplayListener {
+                                    override fun adDisplayed(ad: Ad) = Unit
 
-                                                override fun adClicked(ad: Ad) = Unit
+                                    override fun adClicked(ad: Ad) = Unit
 
-                                                override fun adHidden(ad: Ad) {
-                                                    if (!rewardGranted) {
-                                                        isRewardedAdLoading = false
-                                                    }
-                                                }
+                                    override fun adHidden(ad: Ad) {
+                                        if (!rewardGranted) {
+                                            isRewardedAdLoading = false
+                                            rewardedAdUnavailable = true
+                                        }
+                                    }
 
-                                                override fun adNotDisplayed(ad: Ad) {
-                                                    isRewardedAdLoading = false
-                                                    rewardedAdUnavailable = true
-                                                }
-                                            },
-                                        )
-                                    ) {
+                                    override fun adNotDisplayed(ad: Ad) {
                                         isRewardedAdLoading = false
                                         rewardedAdUnavailable = true
+                                        loadRewardedAd()
                                     }
-                                }
-
-                                override fun onFailedToReceiveAd(ad: Ad?) {
-                                    isRewardedAdLoading = false
-                                    rewardedAdUnavailable = true
-                                }
-                            },
-                        )
+                                },
+                            )
+                        ) {
+                            isRewardedAdLoading = false
+                            rewardedAdUnavailable = true
+                            loadRewardedAd()
+                        }
                     },
                     enabled = !isRewardedAdLoading,
                 ) {
-                    Text(if (isRewardedAdLoading) "Aguarde..." else "Assistir anúncio")
+                    Text(
+                        when {
+                            isRewardedAdLoading -> "Aguarde..."
+                            preparedRewardedAd == null -> "Preparar anúncio"
+                            else -> "Assistir anúncio"
+                        },
+                    )
                 }
             },
             dismissButton = {

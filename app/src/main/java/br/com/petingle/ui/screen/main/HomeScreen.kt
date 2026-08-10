@@ -23,10 +23,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cake
 import androidx.compose.material.icons.rounded.MedicalServices
@@ -123,7 +121,6 @@ private fun StaggeredHomePetCard(pet: Pet, index: Int) {
 }
 
 // ─── Ponto de entrada da aba Início ─────────────────────────────────────────
-// Mudança: Substituído LazyColumn por Column com verticalScroll para manter padrão visual
 
 @Composable
 fun HomeScreen(
@@ -135,12 +132,10 @@ fun HomeScreen(
     val nextVaccineDate by viewModel.nextVaccineDate.collectAsState()
     val nextConsultDate by viewModel.nextConsultDate.collectAsState()
     val tipSpecies      = pets.firstOrNull()?.species
-    val scrollState     = rememberScrollState()
 
     Column(
         modifier        = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
             .padding(top = 16.dp, bottom = 96.dp),
     ) {
         // (1) Card de estatísticas — fade+slide com delay 0

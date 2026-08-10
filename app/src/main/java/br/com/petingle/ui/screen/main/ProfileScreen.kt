@@ -318,8 +318,8 @@ fun ProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 8.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
 
             // ── Hero header ───────────────────────────────────────────────────
@@ -434,7 +434,7 @@ private fun ProfileHeroHeader(
     Column(modifier = Modifier.fillMaxWidth()) {
         // ── Zona do gradiente com informações do usuário ──────────────────────
         Box(
-            modifier = Modifier
+                        modifier = Modifier
                 .fillMaxWidth()
                 .background(
                     Brush.verticalGradient(
@@ -457,7 +457,7 @@ private fun ProfileHeroHeader(
                     .fillMaxWidth()
                     .padding(
                         horizontal = if (compact) 16.dp else 24.dp,
-                        vertical = if (compact) 12.dp else 28.dp,
+                        vertical = if (compact) 10.dp else 18.dp,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -596,7 +596,7 @@ private fun ProfileHeroHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = if (compact) 8.dp else 16.dp),
+                    .padding(vertical = if (compact) 6.dp else 10.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString(), compact = compact)
@@ -662,8 +662,8 @@ private fun StaggerSection(visible: Boolean, index: Int, content: @Composable ()
     Box(
         modifier = Modifier
             .graphicsLayer { this.alpha = alpha.value; translationY = offsetY.value }
-            .padding(horizontal = 12.dp)
-            .padding(top = 3.dp),
+            .padding(horizontal = 4.dp)
+            .padding(top = 0.dp),
     ) {
         content()
     }
@@ -912,7 +912,7 @@ private fun ProfileSectionCard(
         colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(2.dp),
     ) {
-        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
