@@ -6,10 +6,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -126,7 +124,10 @@ fun MainScreen(
         if (isRewardedAdLoading || preparedRewardedAd != null) return
         isRewardedAdLoading = true
         rewardedAdUnavailable = false
-        val rewardedAd = StartAppAd(context.applicationContext)
+        // O anúncio recompensado precisa do contexto da Activity para conseguir
+        // abrir a tela de vídeo. O applicationContext carrega o anúncio, mas
+        // pode fazer o showAd falhar silenciosamente em alguns aparelhos.
+        val rewardedAd = StartAppAd(context)
         try {
             rewardedAd.loadAd(
                 AdMode.REWARDED_VIDEO,
@@ -149,6 +150,12 @@ fun MainScreen(
             isRewardedAdLoading = false
             rewardedAdUnavailable = true
         }
+    }
+
+    // Deixa o anúncio pronto antes de o usuário chegar ao limite. Assim o
+    // diálogo não fica preso em uma primeira tentativa de carregamento.
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        loadRewardedAd()
     }
 
     // ── ViewModel de Lembretes ────────────────────────────────────────────────
@@ -263,8 +270,8 @@ fun MainScreen(
         }
     }
 
-    // Carrega sob demanda, somente quando o usuário solicita o desbloqueio.
-    // Cada nova tentativa cria uma instância limpa do anúncio.
+    // Se a primeira tentativa falhar, permite uma nova busca ao abrir o
+    // diálogo sem criar várias requisições durante recomposições.
     androidx.compose.runtime.LaunchedEffect(showPetLimitDialog) {
         if (showPetLimitDialog) loadRewardedAd()
     }
@@ -465,19 +472,10 @@ private fun PetIngleBottomBar(
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor   = OrangePrimary,
-        tonalElevation = 4.dp,
+        tonalElevation = 2.dp,
     ) {
         tabs.forEachIndexed { index, tab ->
             val isSelected = selectedIndex == index
-
-            val scale by animateFloatAsState(
-                targetValue = if (isSelected) 1.22f else 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness    = Spring.StiffnessHigh,
-                ),
-                label = "tab_jump_${tab.name}",
-            )
 
             NavigationBarItem(
                 selected = isSelected,
@@ -486,9 +484,7 @@ private fun PetIngleBottomBar(
                     Icon(
                         imageVector        = tab.icon,
                         contentDescription = tab.label,
-                        modifier           = Modifier
-                            .size(24.dp)
-                            .scale(scale),
+                        modifier           = Modifier.size(22.dp),
                     )
                 },
                 label = {
@@ -501,7 +497,7 @@ private fun PetIngleBottomBar(
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor   = OrangePrimary,
                     selectedTextColor   = OrangePrimary,
-                    indicatorColor      = OrangePrimary.copy(alpha = 0.12f),
+                    indicatorColor      = OrangePrimary.copy(alpha = 0.10f),
                     unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
                     unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
                 ),

@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -315,81 +314,70 @@ fun ProfileScreen(
     }
 
     // ── Layout principal ──────────────────────────────────────────────────────
+    // O perfil volta ao layout compacto original: uma única coluna, sem
+    // rolagem, mantendo as mesmas ações e a ordem das seções.
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 8.dp),
-            contentPadding = PaddingValues(top = 4.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(bottom = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            item {
-                ProfileHeroHeader(
-                    userName      = userName,
-                    photoPath     = profilePhotoPath,
-                    petCount      = petCount,
-                    diaryCount    = diaryCount,
-                    reminderCount = reminderCount,
-                    isDark        = isDark,
-                    compact       = false,
-                    editingName   = editingName,
-                    nameInput     = nameInput,
-                    onNameInputChange = { nameInput = it },
-                    onEditToggle  = { editingName = !editingName },
-                    onNameSave    = {
-                        viewModel.setUserName(nameInput)
-                        focusManager.clearFocus()
-                        editingName = false
-                        scope.launch { snackbarState.showSnackbar("Nome salvo!") }
-                    },
-                    onPhotoClick  = {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    },
+            ProfileHeroHeader(
+                userName      = userName,
+                photoPath     = profilePhotoPath,
+                petCount      = petCount,
+                diaryCount    = diaryCount,
+                reminderCount = reminderCount,
+                isDark        = isDark,
+                compact       = true,
+                editingName   = editingName,
+                nameInput     = nameInput,
+                onNameInputChange = { nameInput = it },
+                onEditToggle  = { editingName = !editingName },
+                onNameSave    = {
+                    viewModel.setUserName(nameInput)
+                    focusManager.clearFocus()
+                    editingName = false
+                    scope.launch { snackbarState.showSnackbar("Nome salvo!") }
+                },
+                onPhotoClick  = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+            )
+            StaggerSection(visible = sectionVisible[0].value, index = 0) {
+                AppearanceCard(isDark = isDark, onToggle = { themeViewModel.setDarkTheme(it) })
+            }
+            StaggerSection(visible = sectionVisible[1].value, index = 1) {
+                BackupCard(
+                    onExport = { exportLauncher.launch(null) },
+                    onImport = { importLauncher.launch(arrayOf("*/*")) },
                 )
             }
-            item {
-                StaggerSection(visible = sectionVisible[0].value, index = 0) {
-                    AppearanceCard(isDark = isDark, onToggle = { themeViewModel.setDarkTheme(it) })
-                }
+            StaggerSection(visible = sectionVisible[2].value, index = 2) {
+                LegalExpandableCard(
+                    title   = "Política de Privacidade",
+                    icon    = Icons.Rounded.Policy,
+                    content = PRIVACY_POLICY_TEXT,
+                )
             }
-            item {
-                StaggerSection(visible = sectionVisible[1].value, index = 1) {
-                    BackupCard(
-                        onExport = { exportLauncher.launch(null) },
-                        onImport = { importLauncher.launch(arrayOf("*/*")) },
-                    )
-                }
+            StaggerSection(visible = sectionVisible[3].value, index = 3) {
+                LegalExpandableCard(
+                    title   = "Termos de Uso",
+                    icon    = Icons.Rounded.Gavel,
+                    content = TERMS_OF_USE_TEXT,
+                )
             }
-            item {
-                StaggerSection(visible = sectionVisible[2].value, index = 2) {
+            StaggerSection(visible = sectionVisible[4].value, index = 4) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     LegalExpandableCard(
-                        title   = "Política de Privacidade",
-                        icon    = Icons.Rounded.Policy,
-                        content = PRIVACY_POLICY_TEXT,
+                        title   = "Sobre o PetIngle",
+                        icon    = Icons.Rounded.Info,
+                        content = ABOUT_TEXT,
                     )
-                }
-            }
-            item {
-                StaggerSection(visible = sectionVisible[3].value, index = 3) {
-                    LegalExpandableCard(
-                        title   = "Termos de Uso",
-                        icon    = Icons.Rounded.Gavel,
-                        content = TERMS_OF_USE_TEXT,
-                    )
-                }
-            }
-            item {
-                StaggerSection(visible = sectionVisible[4].value, index = 4) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        LegalExpandableCard(
-                            title   = "Sobre o PetIngle",
-                            icon    = Icons.Rounded.Info,
-                            content = ABOUT_TEXT,
-                        )
-                        DangerCard(onDeleteClick = { showDeleteDialog1 = true })
-                    }
+                    DangerCard(onDeleteClick = { showDeleteDialog1 = true })
                 }
             }
         }
