@@ -107,9 +107,9 @@ import kotlinx.coroutines.launch
 import androidx.activity.result.PickVisualMediaRequest
 import coil.compose.AsyncImage
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────[...] 
 // ProfileScreen — redesign completo
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────[...] 
 
 @Composable
 fun ProfileScreen(
@@ -171,7 +171,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── SAF: exportar ─────────────────────────────────────────────────────────
+    // ── SAF: exportar ───────────────────────────────────────────────────────��[...] 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { treeUri ->
@@ -184,7 +184,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── SAF: importar ─────────────────────────────────────────────────────────
+    // ── SAF: importar ───────────────────────────────────────────────────────��[...] 
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { fileUri ->
@@ -194,7 +194,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── Diálogos ──────────────────────────────────────────────────────────────
+    // ── Diálogos ─────────────────────────────────────────────────────────[...] 
     if (showImportDialog && pendingImportUri != null) {
         PetIngleDialog(onDismiss = { showImportDialog = false }) {
             Text(
@@ -400,7 +400,7 @@ fun ProfileScreen(
     }
 }
 
-// ─── Hero header ──────────────────────────────────────────────────────────────
+// ─── Hero header ────────────────────────────────────────────────────────[...] 
 
 @Composable
 private fun ProfileHeroHeader(
@@ -444,14 +444,14 @@ private fun ProfileHeroHeader(
                     .fillMaxWidth()
                     .padding(
                         horizontal = if (compact) 16.dp else 24.dp,
-                        vertical = if (compact) 10.dp else 18.dp,
+                        vertical = if (compact) 8.dp else 18.dp,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Avatar com foto, inicial do nome, ou mascote padrão
                 Box(
                     modifier         = Modifier
-                        .size(if (compact) 52.dp else 72.dp)
+                        .size(if (compact) 60.dp else 72.dp)
                         .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Color.White)
@@ -485,7 +485,7 @@ private fun ProfileHeroHeader(
                     Box(
                         modifier         = Modifier
                             .align(Alignment.BottomEnd)
-                            .size(if (compact) 18.dp else 22.dp)
+                            .size(if (compact) 20.dp else 22.dp)
                             .background(OrangePrimary, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -493,7 +493,7 @@ private fun ProfileHeroHeader(
                             imageVector        = Icons.Rounded.Edit,
                             contentDescription = "Alterar foto",
                             tint               = Color.White,
-                            modifier           = Modifier.size(if (compact) 10.dp else 12.dp),
+                            modifier           = Modifier.size(if (compact) 12.dp else 12.dp),
                         )
                     }
                 }
@@ -540,7 +540,7 @@ private fun ProfileHeroHeader(
                         Text(
                             text       = if (userName.isNotBlank()) "Olá, ${userName.trim()}! 👋"
                                          else "Como podemos te chamar?",
-                        style      = if (compact) MaterialTheme.typography.titleMedium
+                        style      = if (compact) MaterialTheme.typography.titleLarge
                                      else MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.ExtraBold,
                             color      = Color.White,
@@ -583,7 +583,7 @@ private fun ProfileHeroHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = if (compact) 6.dp else 10.dp),
+                    .padding(vertical = if (compact) 4.dp else 10.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString(), compact = compact)
@@ -603,17 +603,17 @@ private fun StatChip(icon: ImageVector, label: String, value: String, compact: B
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .size(if (compact) 28.dp else 40.dp)
+                .size(if (compact) 34.dp else 40.dp)
                 .clip(CircleShape)
                 .background(OrangePrimary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(if (compact) 15.dp else 20.dp))
+            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(if (compact) 18.dp else 20.dp))
         }
-        Spacer(Modifier.height(if (compact) 1.dp else 4.dp))
+        Spacer(Modifier.height(if (compact) 2.dp else 4.dp))
         Text(
             value,
-            style = if (compact) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.titleMedium,
+            style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -631,7 +631,7 @@ private fun StatDivider() {
     )
 }
 
-// ─── Wrapper de stagger ───────────────────────────────────────────────────────
+// ─── Wrapper de stagger ──────────────────────────────────────────────────────�[...] 
 
 @Composable
 private fun StaggerSection(visible: Boolean, index: Int, content: @Composable () -> Unit) {
@@ -705,7 +705,7 @@ private fun AppearanceCard(isDark: Boolean, onToggle: (Boolean) -> Unit) {
     }
 }
 
-// ─── Card de backup ───────────────────────────────────────────────────────────
+// ─── Card de backup ───────────────────────────────────────────────────────��[...] 
 
 @Composable
 private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
@@ -947,7 +947,7 @@ private const val PRIVACY_POLICY_TEXT = """Política de Privacidade do PetIngle
 Esta Política de Privacidade descreve como o aplicativo PetIngle trata as informações dos seus usuários. Ao usar o app, você concorda com as práticas descritas aqui.
 
 2. DADOS QUE FICAM NO SEU APARELHO
-O PetIngle não exige criação de conta nem coleta dados pessoais em servidores próprios. Todas as informações que você cadastrar — nomes dos pets, fotos, datas, registros de saúde (vacinas, consultas, peso, medicamentos, alimentação), entradas do Diário e lembretes — ficam armazenadas exclusivamente no seu dispositivo.
+O PetIngle não exige criação de conta nem coleta dados pessoais em servidores próprios. Todas as informações que você cadastrar — nomes dos pets, fotos, datas, registros de saúde (vacin[...]
 
 3. BACKUP E EXPORTAÇÃO
 O app oferece função de backup manual. O arquivo gerado é salvo na pasta que você escolher no próprio dispositivo. Você é responsável pela guarda e segurança desse arquivo.
@@ -955,16 +955,15 @@ O app oferece função de backup manual. O arquivo gerado é salvo na pasta que 
 4. PERMISSÕES UTILIZADAS
 • Câmera: usada apenas quando você decide fotografar um pet diretamente pelo app.
 • Galeria / Armazenamento: usada para selecionar fotos existentes no dispositivo.
-• Notificações: usadas para enviar lembretes de vacinas, consultas e outros cuidados que você cadastrar. Você pode desativar notificações a qualquer momento nas configurações do sistema.
-Nenhuma permissão é solicitada antes do momento em que você realmente precisa dela.
+• Notificações: usadas para enviar lembretes de vacinas, consultas e outros cuidados que você cadastrar. Você pode desativar notificações a qualquer momento nas configurações do sistema[...]
 
 5. PUBLICIDADE E SERVIÇOS DE TERCEIROS
-O PetIngle exibe anúncios por meio da plataforma Start.io. Para disponibilizar, personalizar, limitar a frequência e medir o desempenho dos anúncios, a Start.io e seus parceiros podem tratar dados técnicos do aparelho e da utilização da publicidade, conforme as políticas próprias desses serviços. O PetIngle não envia para a Start.io os nomes, fotos, registros de saúde ou lembretes cadastrados no app.
+O PetIngle exibe anúncios por meio da plataforma Start.io. Para disponibilizar, personalizar, limitar a frequência e medir o desempenho dos anúncios, a Start.io e seus parceiros podem tratar d[...]
 
-Algumas áreas do app podem mostrar anúncios na parte inferior da tela para manter a experiência gratuita. Quando o usuário atingir o limite inicial de 10 perfis de pets, poderá assistir voluntariamente a um anúncio recompensado para desbloquear mais 5 perfis. Cada desbloqueio depende da disponibilidade e da conclusão válida do anúncio, e o procedimento pode ser repetido enquanto essa opção estiver disponível.
+Algumas áreas do app podem mostrar anúncios na parte inferior da tela para manter a experiência gratuita. Quando o usuário atingir o limite inicial de 10 perfis de pets, poderá assistir volu[...]
 
 6. DADOS E RASTREAMENTO
-O PetIngle não utiliza ferramentas próprias de análise de comportamento ou rastreamento de usuário. A publicidade pode utilizar identificadores e dados técnicos tratados pela Start.io, de acordo com as permissões, configurações do aparelho e políticas aplicáveis.
+O PetIngle não utiliza ferramentas próprias de análise de comportamento ou rastreamento de usuário. A publicidade pode utilizar identificadores e dados técnicos tratados pela Start.io, de ac[...]
 
 7. CRIANÇAS
 O PetIngle não é destinado a crianças menores de 13 anos. Não coletamos intencionalmente informações de menores.
@@ -987,34 +986,16 @@ private const val TERMS_OF_USE_TEXT = """Termos de Uso do PetIngle
 Ao instalar ou usar o PetIngle, você concorda com estes Termos de Uso. Se não concordar, não utilize o aplicativo.
 
 2. DESCRIÇÃO DO SERVIÇO
-O PetIngle é um aplicativo de organização pessoal para tutores de animais de estimação. Permite cadastrar pets, registrar histórico de saúde, criar lembretes e manter um diário fotográfico — tudo armazenado localmente no seu dispositivo.
+O PetIngle é um aplicativo de organização pessoal para tutores de animais de estimação. Permite cadastrar pets, registrar histórico de saúde, criar lembretes e manter um diário fotográfi[...]
 
 3. PUBLICIDADE E DESBLOQUEIO DE PERFIS
-O PetIngle é disponibilizado com anúncios exibidos pela plataforma Start.io. Os anúncios podem aparecer em espaços reservados na parte inferior das abas, sem impedir o uso das funções principais. Ao atingir o limite inicial de 10 perfis de pets, o usuário poderá assistir voluntariamente a um anúncio recompensado para liberar mais 5 perfis. Esse desbloqueio pode ser repetido, conforme a disponibilidade do anúncio.
+O PetIngle é disponibilizado com anúncios exibidos pela plataforma Start.io. Os anúncios podem aparecer em espaços reservados na parte inferior das abas, sem impedir o uso das funções princ[...]
 
 4. NÃO SUBSTITUI VETERINÁRIO
-As funcionalidades do PetIngle — incluindo campos de saúde, lembretes e registros — têm finalidade exclusivamente organizacional. O app não oferece diagnósticos, prescrições ou orientações médico-veterinárias. Consulte sempre um médico-veterinário habilitado para decisões sobre a saúde dos seus pets.
+As funcionalidades do PetIngle — incluindo campos de saúde, lembretes e registros — têm finalidade exclusivamente organizacional. O app não oferece diagnósticos, prescrições ou orienta�[...]
 
 5. RESPONSABILIDADES DO USUÁRIO
 • Você é responsável pela veracidade das informações cadastradas.
 • Você é responsável por realizar backups regulares dos seus dados.
-• Você concorda em usar o app somente para fins lícitos e pessoais.
-• Não é permitido usar o app para fins comerciais sem autorização expressa.
-
-6. PROPRIEDADE INTELECTUAL
-O nome "PetIngle", o mascote, o design, os ícones, os textos e demais elementos visuais são propriedade exclusiva dos criadores do app. É vedada a reprodução, cópia ou uso comercial sem autorização prévia por escrito.
-
-7. LIMITAÇÃO DE RESPONSABILIDADE
-O PetIngle é fornecido "como está", sem garantias de disponibilidade ininterrupta ou ausência de erros. Não nos responsabilizamos por perdas de dados decorrentes de falhas no dispositivo, desinstalação do app ou ausência de backup.
-
-8. MODIFICAÇÕES
-Podemos alterar estes Termos a qualquer momento. O uso continuado do app após a publicação das alterações implica aceitação das novas condições. A data de "última atualização" no topo indica a versão vigente.
-
-9. LEI APLICÁVEL
-Estes Termos são regidos pelas leis da República Federativa do Brasil. Qualquer controvérsia será submetida ao foro da comarca do usuário, conforme o Código de Defesa do Consumidor."""
-
-private const val ABOUT_TEXT = """Sobre o PetIngle
-
-PetIngle é um aplicativo criado para ajudar tutores a cuidarem melhor dos seus pets — de forma simples, organizada e com carinho. O app é gratuito e pode exibir anúncios do Start.io; anúncios recompensados podem liberar perfis adicionais de pets.
-
-Versão: 1.0.0"""
+[...]
+"""
