@@ -314,14 +314,14 @@ fun ProfileScreen(
     }
 
     // ── Layout principal ──────────────────────────────────────────────────────
-    // O perfil volta ao layout compacto original: uma única coluna, sem
-    // rolagem, mantendo as mesmas ações e a ordem das seções.
+    // O perfil permanece em uma única coluna fixa, sem rolagem. Os elementos
+    // usam a versão compacta para manter todas as ações visíveis na tela.
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             ProfileHeroHeader(
                 userName      = userName,
@@ -371,7 +371,7 @@ fun ProfileScreen(
                 )
             }
             StaggerSection(visible = sectionVisible[4].value, index = 4) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     LegalExpandableCard(
                         title   = "Sobre o PetIngle",
                         icon    = Icons.Rounded.Info,
@@ -443,15 +443,15 @@ private fun ProfileHeroHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        horizontal = if (compact) 8.dp else 12.dp,
-                        vertical = if (compact) 6.dp else 12.dp,
+                        horizontal = if (compact) 6.dp else 12.dp,
+                        vertical = if (compact) 4.dp else 12.dp,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Avatar com foto, inicial do nome, ou mascote padrão
                 Box(
                     modifier         = Modifier
-                        .size(if (compact) 68.dp else 72.dp)
+                        .size(if (compact) 64.dp else 72.dp)
                         .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Color.White)
@@ -575,8 +575,8 @@ private fun ProfileHeroHeader(
         Card(
             modifier  = Modifier
                 .fillMaxWidth()
-                .offset(y = (-20).dp)
-                .padding(horizontal = if (compact) 6.dp else 8.dp),
+                .offset(y = (-16).dp)
+                .padding(horizontal = if (compact) 0.dp else 8.dp),
             shape     = RoundedCornerShape(20.dp),
             colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(8.dp),
@@ -584,7 +584,7 @@ private fun ProfileHeroHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = if (compact) 4.dp else 8.dp),
+                    .padding(vertical = if (compact) 2.dp else 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString(), compact = compact)
@@ -604,12 +604,12 @@ private fun StatChip(icon: ImageVector, label: String, value: String, compact: B
     Column(
         modifier = Modifier
             .weight(1f)
-            .padding(horizontal = 6.dp),
+            .padding(horizontal = if (compact) 4.dp else 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
             modifier = Modifier
-                .size(if (compact) 36.dp else 40.dp)
+                .size(if (compact) 32.dp else 40.dp)
                 .clip(CircleShape)
                 .background(OrangePrimary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
@@ -621,10 +621,15 @@ private fun StatChip(icon: ImageVector, label: String, value: String, compact: B
             value,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.ExtraBold,
-            fontSize = if (compact) 16.sp else 18.sp,
+            fontSize = if (compact) 15.sp else 18.sp,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            fontSize = if (compact) 10.sp else 11.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+        )
     }
 }
 
@@ -633,7 +638,7 @@ private fun StatDivider() {
     Box(
         modifier = Modifier
             .width(1.dp)
-            .height(48.dp)
+                .height(42.dp)
             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
     )
 }
