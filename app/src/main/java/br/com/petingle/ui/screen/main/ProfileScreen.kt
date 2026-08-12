@@ -20,8 +20,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -600,7 +602,7 @@ private fun ProfileHeroHeader(
 }
 
 @Composable
-private fun StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
+private fun RowScope.StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
     Column(
         modifier = Modifier
             .weight(1f)
@@ -932,3 +934,91 @@ private fun ProfileSectionCard(
         }
     }
 }
+
+@Composable
+private fun PetIngleDialog(
+    onDismiss: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(8.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = content,
+            )
+        }
+    }
+}
+
+// ─── Textos legais ────────────────────────────────────────────────────────────
+
+private const val PRIVACY_POLICY_TEXT = """Política de Privacidade do PetIngle
+Última atualização: Julho de 2026
+
+1. SOBRE ESTE DOCUMENTO
+Esta Política de Privacidade descreve como o aplicativo PetIngle trata as informações dos seus usuários. Ao usar o app, você concorda com as práticas descritas aqui.
+
+2. DADOS QUE FICAM NO SEU APARELHO
+O PetIngle não exige criação de conta nem coleta dados pessoais em servidores próprios. Todas as informações cadastradas — nomes dos pets, fotos, datas, registros de saúde, entradas do Diário e lembretes — ficam armazenadas exclusivamente no seu dispositivo.
+
+3. BACKUP E EXPORTAÇÃO
+O app oferece função de backup manual. O arquivo gerado é salvo na pasta escolhida no próprio dispositivo. Você é responsável pela guarda e segurança desse arquivo.
+
+4. PERMISSÕES UTILIZADAS
+• Câmera: usada apenas quando você decide fotografar um pet diretamente pelo app.
+• Galeria / Armazenamento: usada para selecionar fotos existentes no dispositivo.
+• Notificações: usadas para enviar os lembretes cadastrados. Você pode desativá-las a qualquer momento nas configurações do sistema.
+
+5. PUBLICIDADE E SERVIÇOS DE TERCEIROS
+O PetIngle exibe anúncios por meio da plataforma Start.io. O PetIngle não envia para a Start.io os nomes, fotos, registros de saúde ou lembretes cadastrados no app.
+
+6. DADOS E RASTREAMENTO
+O PetIngle não utiliza ferramentas próprias de análise de comportamento ou rastreamento de usuário.
+
+7. CRIANÇAS
+O PetIngle não é destinado a crianças menores de 13 anos. Não coletamos intencionalmente informações de menores.
+
+8. SEUS DIREITOS
+Você pode acessar, corrigir ou excluir seus dados diretamente no app. Como todos os dados ficam no seu dispositivo, também pode exercer esses direitos desinstalando-o.
+
+9. ALTERAÇÕES NESTA POLÍTICA
+Podemos atualizar esta política periodicamente. A data de atualização no topo sempre reflete a versão vigente."""
+
+private const val TERMS_OF_USE_TEXT = """Termos de Uso do PetIngle
+Última atualização: Julho de 2026
+
+1. ACEITAÇÃO DOS TERMOS
+Ao instalar ou usar o PetIngle, você concorda com estes Termos de Uso. Se não concordar, não utilize o aplicativo.
+
+2. DESCRIÇÃO DO SERVIÇO
+O PetIngle é um aplicativo de organização pessoal para tutores de animais de estimação. Permite cadastrar pets, registrar histórico de saúde, criar lembretes e manter um diário fotográfico — tudo armazenado localmente no seu dispositivo.
+
+3. PUBLICIDADE E DESBLOQUEIO DE PERFIS
+O PetIngle é disponibilizado com anúncios exibidos pela plataforma Start.io. Ao atingir o limite inicial de perfis, o usuário poderá assistir voluntariamente a um anúncio recompensado para liberar mais perfis, conforme a disponibilidade do anúncio.
+
+4. NÃO SUBSTITUI VETERINÁRIO
+As funcionalidades do PetIngle têm finalidade exclusivamente organizacional. O app não oferece diagnósticos, prescrições ou orientações médico-veterinárias. Consulte sempre um médico-veterinário habilitado.
+
+5. RESPONSABILIDADES DO USUÁRIO
+• Você é responsável pela veracidade das informações cadastradas.
+• Você é responsável por realizar backups regulares dos seus dados.
+• Você concorda em usar o app somente para fins lícitos e pessoais.
+
+6. PROPRIEDADE E LIMITAÇÃO DE RESPONSABILIDADE
+O nome, o mascote, o design, os ícones, os textos e demais elementos visuais do PetIngle pertencem aos seus criadores. O app é fornecido como está, sem garantias de disponibilidade ininterrupta ou ausência de erros.
+
+7. MODIFICAÇÕES
+Podemos alterar estes Termos a qualquer momento. O uso continuado do app após a publicação das alterações implica aceitação das novas condições.
+
+8. LEI APLICÁVEL
+Estes Termos são regidos pelas leis da República Federativa do Brasil."""
+
+private const val ABOUT_TEXT = """Sobre o PetIngle
+Última atualização: Julho de 2026
+
+O PetIngle ajuda tutores a organizar informações dos seus animais de estimação: cadastros, histórico de saúde, lembretes e um diário de memórias. Todas as informações ficam armazenadas localmente no aparelho; o app não exige criação de conta nem sincroniza dados em servidores externos."""
