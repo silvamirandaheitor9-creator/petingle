@@ -107,9 +107,9 @@ import kotlinx.coroutines.launch
 import androidx.activity.result.PickVisualMediaRequest
 import coil.compose.AsyncImage
 
-// ────────────────────────────────────────────────────────────────[...]
+// ────────────────────────────────────────────────────────────────[...] 
 // ProfileScreen — redesign completo
-// ────────────────────────────────────────────────────────────────[...]
+// ────────────────────────────────────────────────────────────────[...] 
 
 @Composable
 fun ProfileScreen(
@@ -171,7 +171,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── SAF: exportar ───────────────────────────────────────────────────────��[...]
+    // ── SAF: exportar ───────────────────────────────────────────────────────��[...] 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { treeUri ->
@@ -184,7 +184,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── SAF: importar ───────────────────────────────────────────────────────��[...]
+    // ── SAF: importar ───────────────────────────────────────────────────────��[...] 
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { fileUri ->
@@ -194,7 +194,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── Diálogos ─────────────────────────────────────────────────────────[...]
+    // ── Diálogos ─────────────────────────────────────────────────────────[...] 
     if (showImportDialog && pendingImportUri != null) {
         PetIngleDialog(onDismiss = { showImportDialog = false }) {
             Text(
@@ -444,14 +444,14 @@ private fun ProfileHeroHeader(
                     .fillMaxWidth()
                     .padding(
                         horizontal = if (compact) 16.dp else 24.dp,
-                        vertical = if (compact) 10.dp else 18.dp,
+                        vertical = if (compact) 6.dp else 18.dp,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Avatar com foto, inicial do nome, ou mascote padrão
                 Box(
                     modifier         = Modifier
-                        .size(if (compact) 52.dp else 72.dp)
+                        .size(if (compact) 64.dp else 72.dp)
                         .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Color.White)
@@ -485,7 +485,7 @@ private fun ProfileHeroHeader(
                     Box(
                         modifier         = Modifier
                             .align(Alignment.BottomEnd)
-                            .size(if (compact) 18.dp else 22.dp)
+                            .size(if (compact) 22.dp else 22.dp)
                             .background(OrangePrimary, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -493,12 +493,12 @@ private fun ProfileHeroHeader(
                             imageVector        = Icons.Rounded.Edit,
                             contentDescription = "Alterar foto",
                             tint               = Color.White,
-                            modifier           = Modifier.size(if (compact) 10.dp else 12.dp),
+                            modifier           = Modifier.size(if (compact) 14.dp else 12.dp),
                         )
                     }
                 }
 
-                Spacer(Modifier.width(16.dp))
+                Spacer(Modifier.width(18.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     if (editingName) {
@@ -540,7 +540,7 @@ private fun ProfileHeroHeader(
                         Text(
                             text       = if (userName.isNotBlank()) "Olá, ${userName.trim()}! 👋"
                                          else "Como podemos te chamar?",
-                        style      = if (compact) MaterialTheme.typography.titleMedium
+                        style      = if (compact) MaterialTheme.typography.titleLarge
                                      else MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.ExtraBold,
                             color      = Color.White,
@@ -600,21 +600,25 @@ private fun ProfileHeroHeader(
 
 @Composable
 private fun StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.weight(1f),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Box(
             modifier = Modifier
-                .size(if (compact) 28.dp else 40.dp)
+                .size(if (compact) 36.dp else 40.dp)
                 .clip(CircleShape)
                 .background(OrangePrimary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(if (compact) 15.dp else 20.dp))
+            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(if (compact) 18.dp else 20.dp))
         }
-        Spacer(Modifier.height(if (compact) 1.dp else 4.dp))
+        Spacer(Modifier.height(if (compact) 2.dp else 4.dp))
         Text(
             value,
-            style = if (compact) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.ExtraBold,
+            fontSize = if (compact) 16.sp else 18.sp,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
@@ -631,7 +635,7 @@ private fun StatDivider() {
     )
 }
 
-// ─── Wrapper de stagger ──────────────────────────────────────────────────────�[...]
+// ─── Wrapper de stagger ──────────────────────────────────────────────────────�[...] 
 
 @Composable
 private fun StaggerSection(visible: Boolean, index: Int, content: @Composable () -> Unit) {
@@ -705,7 +709,7 @@ private fun AppearanceCard(isDark: Boolean, onToggle: (Boolean) -> Unit) {
     }
 }
 
-// ─── Card de backup ───────────────────────────────────────────────────────��[...]
+// ─── Card de backup ───────────────────────────────────────────────────────��[...] 
 
 @Composable
 private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
@@ -920,89 +924,3 @@ private fun ProfileSectionCard(
         }
     }
 }
-
-@Composable
-private fun PetIngleDialog(onDismiss: () -> Unit, content: @Composable (androidx.compose.foundation.layout.ColumnScope.() -> Unit)) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape     = RoundedCornerShape(24.dp),
-            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(8.dp),
-        ) {
-            Column(
-                modifier            = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                content             = content,
-            )
-        }
-    }
-}
-
-// ─── Textos legais (SPEC §19) ─────────────────────────────────────────────────
-
-private const val PRIVACY_POLICY_TEXT = """Política de Privacidade do PetIngle
-Última atualização: Julho de 2026
-
-1. SOBRE ESTE DOCUMENTO
-Esta Política de Privacidade descreve como o aplicativo PetIngle trata as informações dos seus usuários. Ao usar o app, você concorda com as práticas descritas aqui.
-
-2. DADOS QUE FICAM NO SEU APARELHO
-O PetIngle não exige criação de conta nem coleta dados pessoais em servidores próprios. Todas as informações que você cadastrar — nomes dos pets, fotos, datas, registros de saúde (vacin[...]
-
-3. BACKUP E EXPORTAÇÃO
-O app oferece função de backup manual. O arquivo gerado é salvo na pasta que você escolher no próprio dispositivo. Você é responsável pela guarda e segurança desse arquivo.
-
-4. PERMISSÕES UTILIZADAS
-• Câmera: usada apenas quando você decide fotografar um pet diretamente pelo app.
-• Galeria / Armazenamento: usada para selecionar fotos existentes no dispositivo.
-• Notificações: usadas para enviar lembretes de vacinas, consultas e outros cuidados que você cadastrar. Você pode desativar notificações a qualquer momento nas configurações do sistema[...]
-
-5. PUBLICIDADE E SERVIÇOS DE TERCEIROS
-O PetIngle exibe anúncios por meio da plataforma Start.io. Para disponibilizar, personalizar, limitar a frequência e medir o desempenho dos anúncios, a Start.io e seus parceiros podem tratar d[...]
-
-Algumas áreas do app podem mostrar anúncios na parte inferior da tela para manter a experiência gratuita. Quando o usuário atingir o limite inicial de 10 perfis de pets, poderá assistir volu[...]
-
-6. DADOS E RASTREAMENTO
-O PetIngle não utiliza ferramentas próprias de análise de comportamento ou rastreamento de usuário. A publicidade pode utilizar identificadores e dados técnicos tratados pela Start.io, de ac[...]
-
-7. CRIANÇAS
-O PetIngle não é destinado a crianças menores de 13 anos. Não coletamos intencionalmente informações de menores.
-
-8. SEUS DIREITOS (LGPD — LEI 13.709/2018)
-Em conformidade com a Lei Geral de Proteção de Dados, você tem direito a:
-• Confirmar a existência de tratamento de dados;
-• Acessar, corrigir ou excluir seus dados (feito diretamente no app);
-• Solicitar a portabilidade ou eliminação dos dados;
-• Revogar consentimentos a qualquer momento.
-Como todos os dados ficam no seu dispositivo, você exerce esses direitos diretamente pelo app ou desinstalando-o.
-
-9. ALTERAÇÕES NESTA POLÍTICA
-Podemos atualizar esta política periodicamente. Alterações relevantes serão comunicadas dentro do próprio app. A data de "última atualização" no topo sempre reflete a versão vigente."""
-
-private const val TERMS_OF_USE_TEXT = """Termos de Uso do PetIngle
-Última atualização: Julho de 2026
-
-1. ACEITAÇÃO DOS TERMOS
-Ao instalar ou usar o PetIngle, você concorda com estes Termos de Uso. Se não concordar, não utilize o aplicativo.
-
-2. DESCRIÇÃO DO SERVIÇO
-O PetIngle é um aplicativo de organização pessoal para tutores de animais de estimação. Permite cadastrar pets, registrar histórico de saúde, criar lembretes e manter um diário fotográfi[...]
-
-3. PUBLICIDADE E DESBLOQUEIO DE PERFIS
-O PetIngle é disponibilizado com anúncios exibidos pela plataforma Start.io. Os anúncios podem aparecer em espaços reservados na parte inferior das abas, sem impedir o uso das funções princ[...]
-
-4. NÃO SUBSTITUI VETERINÁRIO
-As funcionalidades do PetIngle — incluindo campos de saúde, lembretes e registros — têm finalidade exclusivamente organizacional. O app não oferece diagnósticos, prescrições ou orienta�[...]
-
-5. RESPONSABILIDADES DO USUÁRIO
-• Você é responsável pela veracidade das informações cadastradas.
-• Você é responsável por realizar backups regulares dos seus dados.
-[...]
-"""
-
-private const val ABOUT_TEXT = """Sobre o PetIngle
-Última atualização: Julho de 2026
-
-O PetIngle é um aplicativo criado para ajudar tutores a organizar informações dos seus animais de estimação: cadastros, histórico de saúde, lembretes e um diário de memórias. Todas as informações ficam armazenadas localmente no aparelho; o app não exige criação de conta nem sincroniza dados em servidores externos.
-
-Se quiser, posso expandir esse texto com contato do desenvolvedor, links e informações de versão."""
