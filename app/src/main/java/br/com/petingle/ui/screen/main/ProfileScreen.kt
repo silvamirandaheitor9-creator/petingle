@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -600,7 +601,7 @@ private fun ProfileHeroHeader(
 }
 
 @Composable
-private fun StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
+private fun RowScope.StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
     Column(
         modifier = Modifier
             .weight(1f)
@@ -713,3 +714,255 @@ private fun AppearanceCard(isDark: Boolean, onToggle: (Boolean) -> Unit) {
 }
 
 // ─── Card de backup ───────────────────────────────────────────────────────��[...]
+
+@Composable
+private fun BackupCard(onExport: () -> Unit, onImport: () -> Unit) {
+    ProfileSectionCard(title = "Backup e Restauração", icon = Icons.Rounded.Backup) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(1.5.dp, OrangePrimary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                    .clickable(onClick = onExport)
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(OrangePrimary.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.Upload, null, tint = OrangePrimary, modifier = Modifier.size(15.dp))
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Exportar backup", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Salva dados, nome e foto de perfil",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    )
+                }
+                Icon(
+                    Icons.Rounded.ChevronRight,
+                    null,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(
+                        1.5.dp,
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                        RoundedCornerShape(16.dp),
+                    )
+                    .clickable(onClick = onImport)
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Rounded.Download,
+                        null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.size(15.dp),
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Importar backup", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Restaura dados, nome e foto de perfil",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    )
+                }
+                Icon(
+                    Icons.Rounded.ChevronRight,
+                    null,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DangerCard(onDeleteClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.06f),
+        ),
+        elevation = CardDefaults.cardElevation(0.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onDeleteClick)
+                .padding(horizontal = 10.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Rounded.DeleteForever,
+                    null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Apagar todos os dados",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                Text(
+                    "Remove pets, lembretes, diário e saúde",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
+                )
+            }
+            Icon(
+                Icons.Rounded.ChevronRight,
+                null,
+                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.4f),
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LegalExpandableCard(title: String, icon: ImageVector, content: String) {
+    var expanded by remember { mutableStateOf(false) }
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = tween(200),
+        label = "arrow_$title",
+    )
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(2.dp),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 10.dp, vertical = 9.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(OrangePrimary.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(icon, null, tint = OrangePrimary, modifier = Modifier.size(15.dp))
+                    }
+                    Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                }
+                Icon(
+                    Icons.Rounded.ExpandMore,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .graphicsLayer { rotationZ = arrowRotation },
+                )
+            }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                exit = shrinkVertically(tween(200)) + fadeOut(tween(200)),
+            ) {
+                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = content,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.70f),
+                        lineHeight = 20.sp,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private const val PRIVACY_POLICY_TEXT = """Política de Privacidade do PetIngle
+Última atualização: Julho de 2026
+
+1. SOBRE ESTE DOCUMENTO
+Esta Política de Privacidade descreve como o aplicativo PetIngle trata as informações dos seus usuários. Ao usar o app, você concorda com as práticas descritas aqui.
+
+2. DADOS QUE FICAM NO SEU APARELHO
+O PetIngle não exige criação de conta nem coleta dados pessoais em servidores próprios. Todas as informações cadastradas ficam armazenadas exclusivamente no seu dispositivo.
+
+3. BACKUP E EXPORTAÇÃO
+O app oferece função de backup manual. O arquivo gerado é salvo na pasta que você escolher no próprio dispositivo. Você é responsável pela guarda e segurança desse arquivo.
+
+4. PERMISSÕES UTILIZADAS
+• Câmera: usada apenas quando você decide fotografar um pet diretamente pelo app.
+• Galeria / Armazenamento: usada para selecionar fotos existentes no dispositivo.
+• Notificações: usadas para enviar os lembretes cadastrados.
+
+5. TERCEIROS
+O app não compartilha seus dados pessoais com nenhuma empresa terceira. Não utilizamos ferramentas de análise de comportamento ou rastreamento de usuário."""
+
+private const val TERMS_OF_USE_TEXT = """Termos de Uso do PetIngle
+Última atualização: Julho de 2026
+
+1. ACEITAÇÃO DOS TERMOS
+Ao instalar ou usar o PetIngle, você concorda com estes Termos de Uso.
+
+2. DESCRIÇÃO DO SERVIÇO
+O PetIngle é um aplicativo de organização pessoal para tutores de animais de estimação. Permite cadastrar pets, registrar histórico de saúde, criar lembretes e manter um diário fotográfico — tudo armazenado localmente no seu dispositivo.
+
+3. NÃO SUBSTITUI VETERINÁRIO
+As funcionalidades do PetIngle têm finalidade exclusivamente organizacional. O app não oferece diagnósticos, prescrições ou orientações médico-veterinárias. Consulte sempre um médico-veterinário habilitado.
+
+4. RESPONSABILIDADES DO USUÁRIO
+Você é responsável pela veracidade das informações cadastradas e por realizar backups regulares dos seus dados.
+
+5. LIMITAÇÃO DE RESPONSABILIDADE
+O PetIngle é fornecido "como está". Não nos responsabilizamos por perdas de dados decorrentes de falhas no dispositivo, desinstalação do app ou ausência de backup."""
+
+private const val ABOUT_TEXT = """Sobre o PetIngle
+
+PetIngle é um aplicativo criado para ajudar tutores a cuidarem melhor dos seus pets — de forma simples, organizada e com carinho.
+
+Versão: 1.0.0"""
