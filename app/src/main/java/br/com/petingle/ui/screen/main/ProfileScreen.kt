@@ -1,6 +1,715 @@
-/*
-  Correção: adiciona uma chave de fechamento que estava faltando no fim do arquivo
-  Arquivo: app/src/main/java/br/com/petingle/ui/screen/main/ProfileScreen.kt
-*/
-
 package br.com.petingle.ui.screen.main
+
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoStories
+import androidx.compose.material.icons.rounded.Backup
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Gavel
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Pets
+import androidx.compose.material.icons.rounded.Policy
+import androidx.compose.material.icons.rounded.Upload
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
+import br.com.petingle.R
+import br.com.petingle.ui.theme.OrangeGradEnd
+import br.com.petingle.ui.theme.OrangeGradStart
+import br.com.petingle.ui.theme.OrangePrimary
+import br.com.petingle.ui.viewmodel.ProfileUiEvent
+import br.com.petingle.ui.viewmodel.ProfileViewModel
+import br.com.petingle.ui.viewmodel.ThemeViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.activity.result.PickVisualMediaRequest
+import coil.compose.AsyncImage
+
+// ────────────────────────────────────────────────────────────────[...]
+// ProfileScreen — redesign completo
+// ────────────────────────────────────────────────────────────────[...]
+
+@Composable
+fun ProfileScreen(
+    viewModel: ProfileViewModel = hiltViewModel(),
+    themeViewModel: ThemeViewModel = hiltViewModel(),
+) {
+    val context         = LocalContext.current
+    val focusManager    = LocalFocusManager.current
+    val scope           = rememberCoroutineScope()
+    val snackbarState   = remember { SnackbarHostState() }
+
+    val userName      by viewModel.userName.collectAsState()
+    val isDark        by themeViewModel.isDarkTheme.collectAsState()
+    val petCount      by viewModel.petCount.collectAsState()
+    val diaryCount    by viewModel.diaryCount.collectAsState()
+    val reminderCount by viewModel.reminderCount.collectAsState()
+
+    var nameInput         by remember(userName) { mutableStateOf(userName) }
+    var pendingImportUri  by remember { mutableStateOf<android.net.Uri?>(null) }
+    var editingName       by remember { mutableStateOf(false) }
+
+    val profilePhotoPath by viewModel.profilePhotoPath.collectAsState()
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) viewModel.saveProfilePhoto(uri)
+    }
+
+    var showImportDialog  by remember { mutableStateOf(false) }
+    var showDeleteDialog1 by remember { mutableStateOf(false) }
+    var showDeleteDialog2 by remember { mutableStateOf(false) }
+
+    // ── Stagger: controla visibilidade de cada seção ──────────────────────────
+    val sectionCount = 5
+    val sectionVisible = remember { List(sectionCount) { mutableStateOf(false) } }
+    LaunchedEffect(Unit) {
+        sectionVisible.forEachIndexed { i, state ->
+            delay(80L * i)
+            state.value = true
+        }
+    }
+
+    // ── Eventos do ViewModel ──────────────────────────────────────────────────
+    LaunchedEffect(viewModel.events) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ProfileUiEvent.ExportSuccess ->
+                    snackbarState.showSnackbar("Prontinho! Seus dados estão salvos com segurança 🐾")
+                is ProfileUiEvent.ExportError ->
+                    snackbarState.showSnackbar("Erro ao exportar: ${event.msg}")
+                is ProfileUiEvent.ImportSuccess ->
+                    snackbarState.showSnackbar("Backup importado com sucesso! 🐾")
+                is ProfileUiEvent.ImportError ->
+                    snackbarState.showSnackbar("Erro ao importar: ${event.msg}")
+                is ProfileUiEvent.DeleteSuccess ->
+                    snackbarState.showSnackbar("Todos os dados foram apagados.")
+            }
+        }
+    }
+
+    // ── SAF: exportar ───────────────────────────────────────────────────────��[...]
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { treeUri ->
+        if (treeUri != null) {
+            context.contentResolver.takePersistableUriPermission(
+                treeUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+            viewModel.exportBackup(context.contentResolver, treeUri)
+        }
+    }
+
+    // ── SAF: importar ───────────────────────────────────────────────────────��[...]
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { fileUri ->
+        if (fileUri != null) {
+            pendingImportUri = fileUri
+            showImportDialog = true
+        }
+    }
+
+    // ── Diálogos ─────────────────────────────────────────────────────────[...]
+    if (showImportDialog && pendingImportUri != null) {
+        PetIngleDialog(onDismiss = { showImportDialog = false }) {
+            Text(
+                "Importar Backup",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Como você quer importar os dados?",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+            )
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = {
+                    showImportDialog = false
+                    viewModel.importBackup(context.contentResolver, pendingImportUri!!, merge = true)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = OrangePrimary),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, OrangePrimary),
+            ) { Text("Mesclar com dados atuais", fontWeight = FontWeight.SemiBold) }
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    showImportDialog = false
+                    viewModel.importBackup(context.contentResolver, pendingImportUri!!, merge = false)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
+            ) { Text("Substituir tudo", fontWeight = FontWeight.SemiBold) }
+            TextButton(onClick = { showImportDialog = false }, modifier = Modifier.align(Alignment.End)) {
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+            }
+        }
+    }
+
+    if (showDeleteDialog1) {
+        PetIngleDialog(onDismiss = { showDeleteDialog1 = false }) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Rounded.DeleteForever,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "Apagar todos os dados?",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Todos os pets, lembretes, entradas do diário e registros de saúde serão removidos do aparelho.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = { showDeleteDialog1 = false },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                ) { Text("Cancelar") }
+                Button(
+                    onClick = { showDeleteDialog1 = false; showDeleteDialog2 = true },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                ) { Text("Continuar") }
+            }
+        }
+    }
+
+    if (showDeleteDialog2) {
+        PetIngleDialog(onDismiss = { showDeleteDialog2 = false }) {
+            Text(
+                "Tem certeza absoluta?",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Esta ação é irreversível e não pode ser desfeita. Considere exportar um backup antes de continuar.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = { showDeleteDialog2 = false },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                ) { Text("Cancelar") }
+                Button(
+                    onClick = { showDeleteDialog2 = false; viewModel.deleteAllData() },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                ) { Text("Apagar tudo") }
+            }
+        }
+    }
+
+    // ── Layout principal ──────────────────────────────────────────────────────
+    // O perfil volta ao layout compacto original: uma única coluna, sem
+    // rolagem, mantendo as mesmas ações e a ordem das seções.
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            ProfileHeroHeader(
+                userName      = userName,
+                photoPath     = profilePhotoPath,
+                petCount      = petCount,
+                diaryCount    = diaryCount,
+                reminderCount = reminderCount,
+                isDark        = isDark,
+                compact       = true,
+                editingName   = editingName,
+                nameInput     = nameInput,
+                onNameInputChange = { nameInput = it },
+                onEditToggle  = { editingName = !editingName },
+                onNameSave    = {
+                    viewModel.setUserName(nameInput)
+                    focusManager.clearFocus()
+                    editingName = false
+                    scope.launch { snackbarState.showSnackbar("Nome salvo!") }
+                },
+                onPhotoClick  = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+            )
+            StaggerSection(visible = sectionVisible[0].value, index = 0) {
+                AppearanceCard(isDark = isDark, onToggle = { themeViewModel.setDarkTheme(it) })
+            }
+            StaggerSection(visible = sectionVisible[1].value, index = 1) {
+                BackupCard(
+                    onExport = { exportLauncher.launch(null) },
+                    onImport = { importLauncher.launch(arrayOf("*/*")) },
+                )
+            }
+            StaggerSection(visible = sectionVisible[2].value, index = 2) {
+                LegalExpandableCard(
+                    title   = "Política de Privacidade",
+                    icon    = Icons.Rounded.Policy,
+                    content = PRIVACY_POLICY_TEXT,
+                )
+            }
+            StaggerSection(visible = sectionVisible[3].value, index = 3) {
+                LegalExpandableCard(
+                    title   = "Termos de Uso",
+                    icon    = Icons.Rounded.Gavel,
+                    content = TERMS_OF_USE_TEXT,
+                )
+            }
+            StaggerSection(visible = sectionVisible[4].value, index = 4) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    LegalExpandableCard(
+                        title   = "Sobre o PetIngle",
+                        icon    = Icons.Rounded.Info,
+                        content = ABOUT_TEXT,
+                    )
+                    DangerCard(onDeleteClick = { showDeleteDialog1 = true })
+                }
+            }
+        }
+
+        // ── Snackbar flutuante ────────────────────────────────────────────────
+        SnackbarHost(
+            hostState = snackbarState,
+            modifier  = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp, start = 16.dp, end = 16.dp),
+            snackbar  = { data ->
+                Snackbar(
+                    snackbarData   = data,
+                    shape          = RoundedCornerShape(16.dp),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor   = MaterialTheme.colorScheme.onSurface,
+                )
+            },
+        )
+    }
+}
+
+// ─── Hero header ────────────────────────────────────────────────────────[.[...]
+
+@Composable
+private fun ProfileHeroHeader(
+    userName         : String,
+    photoPath        : String,
+    petCount         : Int,
+    diaryCount       : Int,
+    reminderCount    : Int,
+    isDark           : Boolean,
+    compact          : Boolean = false,
+    editingName      : Boolean,
+    nameInput        : String,
+    onNameInputChange: (String) -> Unit,
+    onEditToggle     : () -> Unit,
+    onNameSave       : () -> Unit,
+    onPhotoClick     : () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // ── Zona do gradiente com informações do usuário ──────────────────────
+        Box(
+                        modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(OrangeGradStart, OrangeGradEnd),
+                    )
+                )
+        ) {
+            // Círculo decorativo de fundo
+            Box(
+                modifier = Modifier
+                    .size(180.dp)
+                    .align(Alignment.TopEnd)
+                    .offset(x = 40.dp, y = (-30).dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.08f)),
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = if (compact) 8.dp else 12.dp,
+                        vertical = if (compact) 6.dp else 12.dp,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // Avatar com foto, inicial do nome, ou mascote padrão
+                Box(
+                    modifier         = Modifier
+                        .size(if (compact) 68.dp else 72.dp)
+                        .shadow(8.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .clickable(onClick = onPhotoClick),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (photoPath.isNotBlank()) {
+                        AsyncImage(
+                            model              = java.io.File(photoPath),
+                            contentDescription = "Foto de perfil",
+                            modifier           = Modifier.fillMaxSize(),
+                            contentScale       = ContentScale.Crop,
+                        )
+                    } else if (userName.isNotBlank()) {
+                        Text(
+                            text       = userName.trim().first().uppercase(),
+                            style      = if (compact) MaterialTheme.typography.titleLarge
+                                         else MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color      = OrangePrimary,
+                        )
+                    } else {
+                        Image(
+                            painter            = painterResource(R.drawable.mel_avatar_pequeno),
+                            contentDescription = "Mascote",
+                            modifier           = Modifier.fillMaxSize(),
+                            contentScale       = ContentScale.Crop,
+                        )
+                    }
+                    // Ícone de edição sobreposto na borda inferior
+                    Box(
+                        modifier         = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(if (compact) 22.dp else 22.dp)
+                            .background(OrangePrimary, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector        = Icons.Rounded.Edit,
+                            contentDescription = "Alterar foto",
+                            tint               = Color.White,
+                            modifier           = Modifier.size(if (compact) 14.dp else 12.dp),
+                        )
+                    }
+                }
+
+                Spacer(Modifier.width(if (compact) 8.dp else 12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    if (editingName) {
+                        OutlinedTextField(
+                            value           = nameInput,
+                            onValueChange   = onNameInputChange,
+                            singleLine      = true,
+                            placeholder     = { Text("Seu apelido", color = Color.White.copy(alpha = 0.7f)) },
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Words,
+                                imeAction      = ImeAction.Done,
+                            ),
+                            keyboardActions = KeyboardActions(onDone = { onNameSave() }),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor   = Color.White,
+                                unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                                focusedTextColor     = Color.White,
+                                unfocusedTextColor   = Color.White,
+                                cursorColor          = Color.White,
+                            ),
+                            shape    = RoundedCornerShape(16.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = onEditToggle) {
+                                Text("Cancelar", color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp)
+                            }
+                            Button(
+                                onClick = onNameSave,
+                                colors  = ButtonDefaults.buttonColors(containerColor = Color.White),
+                                shape   = RoundedCornerShape(24.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                            ) {
+                                Text("Salvar", color = OrangePrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+                        }
+                    } else {
+                        Text(
+                            text       = if (userName.isNotBlank()) "Olá, ${userName.trim()}! 👋"
+                                         else "Como podemos te chamar?",
+                        style      = if (compact) MaterialTheme.typography.titleLarge
+                                     else MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            color      = Color.White,
+                        )
+                        Text(
+                            text  = "Tutor PetIngle",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.75f),
+                        )
+                        Spacer(Modifier.height(if (compact) 4.dp else 8.dp))
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(Color.White.copy(alpha = 0.18f))
+                                .clickable(onClick = onEditToggle)
+                                .padding(
+                                    horizontal = if (compact) 10.dp else 12.dp,
+                                    vertical = if (compact) 3.dp else 5.dp,
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(Icons.Rounded.Edit, null, tint = Color.White, modifier = Modifier.size(12.dp))
+                            Text("Editar nome", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Faixa de estatísticas (sobrepondo levemente o Box de gradiente) ─────
+        Card(
+            modifier  = Modifier
+                .fillMaxWidth()
+                .offset(y = (-20).dp)
+                .padding(horizontal = if (compact) 6.dp else 8.dp),
+            shape     = RoundedCornerShape(20.dp),
+            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(8.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = if (compact) 4.dp else 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString(), compact = compact)
+                StatDivider()
+                StatChip(icon = Icons.Rounded.AutoStories,   label = "Memórias",  value = diaryCount.toString(), compact = compact)
+                StatDivider()
+                StatChip(icon = Icons.Rounded.Notifications, label = "Lembretes", value = reminderCount.toString(), compact = compact)
+            }
+        }
+
+
+    }
+}
+
+@Composable
+private fun StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .padding(horizontal = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(if (compact) 36.dp else 40.dp)
+                .clip(CircleShape)
+                .background(OrangePrimary.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(if (compact) 18.dp else 20.dp))
+        }
+        Spacer(Modifier.height(if (compact) 2.dp else 4.dp))
+        Text(
+            value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = if (compact) 16.sp else 18.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+    }
+}
+
+@Composable
+private fun StatDivider() {
+    Box(
+        modifier = Modifier
+            .width(1.dp)
+            .height(48.dp)
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+    )
+}
+
+// ─── Wrapper de stagger ──────────────────────────────────────────────────────�[...]
+
+@Composable
+private fun StaggerSection(visible: Boolean, index: Int, content: @Composable () -> Unit) {
+    val alpha   = remember { Animatable(0f) }
+    val offsetY = remember { Animatable(24f) }
+
+    LaunchedEffect(visible) {
+        if (visible) {
+            delay(index * 60L)
+            launch { alpha.animateTo(1f, tween(260, easing = FastOutSlowInEasing)) }
+            launch { offsetY.animateTo(0f, tween(260, easing = FastOutSlowInEasing)) }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .graphicsLayer { this.alpha = alpha.value; translationY = offsetY.value }
+            .padding(horizontal = 4.dp)
+            .padding(top = 0.dp),
+    ) {
+        content()
+    }
+}
+
+// ─── Card de aparência / tema ─────────────────────────────────────────────────
+
+@Composable
+private fun AppearanceCard(isDark: Boolean, onToggle: (Boolean) -> Unit) {
+    val trackColor by animateColorAsState(
+        targetValue   = if (isDark) OrangePrimary else Color.LightGray,
+        animationSpec = tween(300),
+        label         = "theme_track",
+    )
+    ProfileSectionCard(title = "Aparência", icon = if (isDark) Icons.Rounded.LightMode else Icons.Rounded.DarkMode) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column {
+                Text(
+                    if (isDark) "Tema Escuro" else "Tema Claro",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    if (isDark) "Toque para usar o tema claro" else "Toque para usar o tema escuro",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.50f),
+                )
+            }
+            Switch(
+                checked        = isDark,
+                onCheckedChange= onToggle,
+                thumbContent   = {
+                    Icon(
+                        imageVector = if (isDark) Icons.Rounded.LightMode else Icons.Rounded.DarkMode,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = if (isDark) OrangePrimary else Color.Gray,
+                    )
+                },
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor   = OrangePrimary.copy(alpha = 0.4f),
+                    checkedThumbColor   = OrangePrimary,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                ),
+            )
+        }
+    }
+}
+
+// ─── Card de backup ───────────────────────────────────────────────────────��[...]
