@@ -171,7 +171,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── SAF: exportar ───────────────────────────────────────────────────────��[...] 
+    // ── SAF: exportar ───────────────────────────────────────────────────────��[...]
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { treeUri ->
@@ -184,7 +184,7 @@ fun ProfileScreen(
         }
     }
 
-    // ── SAF: importar ───────────────────────────────────────────────────────��[...] 
+    // ── SAF: importar ───────────────────────────────────────────────────────��[...]
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { fileUri ->
@@ -443,15 +443,15 @@ private fun ProfileHeroHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        horizontal = if (compact) 16.dp else 24.dp,
-                        vertical = if (compact) 6.dp else 18.dp,
+                        horizontal = if (compact) 8.dp else 12.dp,
+                        vertical = if (compact) 6.dp else 12.dp,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Avatar com foto, inicial do nome, ou mascote padrão
                 Box(
                     modifier         = Modifier
-                        .size(if (compact) 64.dp else 72.dp)
+                        .size(if (compact) 68.dp else 72.dp)
                         .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Color.White)
@@ -498,7 +498,7 @@ private fun ProfileHeroHeader(
                     }
                 }
 
-                Spacer(Modifier.width(18.dp))
+                Spacer(Modifier.width(if (compact) 8.dp else 12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     if (editingName) {
@@ -571,11 +571,12 @@ private fun ProfileHeroHeader(
             }
         }
 
-        // ── Faixa de estatísticas (fora do Box de gradiente, sem overlap) ─────
+        // ── Faixa de estatísticas (sobrepondo levemente o Box de gradiente) ─────
         Card(
             modifier  = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = if (compact) 12.dp else 20.dp),
+                .offset(y = (-20).dp)
+                .padding(horizontal = if (compact) 6.dp else 8.dp),
             shape     = RoundedCornerShape(20.dp),
             colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(8.dp),
@@ -583,8 +584,8 @@ private fun ProfileHeroHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = if (compact) 6.dp else 10.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                    .padding(vertical = if (compact) 4.dp else 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 StatChip(icon = Icons.Rounded.Pets,          label = "Pets",      value = petCount.toString(), compact = compact)
                 StatDivider()
@@ -601,7 +602,9 @@ private fun ProfileHeroHeader(
 @Composable
 private fun StatChip(icon: ImageVector, label: String, value: String, compact: Boolean = false) {
     Column(
-        modifier = Modifier.weight(1f),
+        modifier = Modifier
+            .weight(1f)
+            .padding(horizontal = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
