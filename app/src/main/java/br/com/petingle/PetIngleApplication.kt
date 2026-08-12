@@ -21,6 +21,12 @@ class PetIngleApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        // O modo de teste garante inventário recompensado durante o debug sem
+        // gerar cliques/impressões inválidos na conta de produção. BuildConfig
+        // remove esse comportamento automaticamente nas versões release.
+        if (BuildConfig.DEBUG) {
+            StartAppSDK.setTestAdsEnabled(true)
+        }
         StartAppSDK.initParams(this, "207863473")
             .setReturnAdsEnabled(false)
             .init()

@@ -45,7 +45,9 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,11 +71,6 @@ import br.com.petingle.ui.theme.OrangePrimary
 import br.com.petingle.ui.viewmodel.HomeViewModel
 import br.com.petingle.ui.viewmodel.PetsViewModel
 import br.com.petingle.ui.viewmodel.ReminderViewModel
-import com.startapp.sdk.adsbase.Ad
-import com.startapp.sdk.adsbase.StartAppAd
-import com.startapp.sdk.adsbase.StartAppAd.AdMode
-import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener
-import com.startapp.sdk.adsbase.adlisteners.AdEventListener
 import com.startapp.sdk.ads.banner.Banner
 import java.util.Calendar
 
@@ -116,46 +113,31 @@ fun MainScreen(
     val petLimit by petsViewModel.petLimit.collectAsState()
     val context = LocalContext.current
     var showPetLimitDialog by remember { mutableStateOf(false) }
-    var preparedRewardedAd by remember { mutableStateOf<StartAppAd?>(null) }
-    var isRewardedAdLoading by rememberSaveable { mutableStateOf(false) }
-    var rewardedAdUnavailable by rememberSaveable { mutableStateOf(false) }
-
-    fun loadRewardedAd() {
-        if (isRewardedAdLoading || preparedRewardedAd != null) return
-        isRewardedAdLoading = true
-        rewardedAdUnavailable = false
-        // O anúncio recompensado precisa do contexto da Activity para conseguir
-        // abrir a tela de vídeo. O applicationContext carrega o anúncio, mas
-        // pode fazer o showAd falhar silenciosamente em alguns aparelhos.
-        val rewardedAd = StartAppAd(context)
-        try {
-            rewardedAd.loadAd(
-                AdMode.REWARDED_VIDEO,
-                object : AdEventListener {
-                    override fun onReceiveAd(ad: Ad) {
-                        preparedRewardedAd = rewardedAd
-                        isRewardedAdLoading = false
-                        rewardedAdUnavailable = false
-                    }
-
-                    override fun onFailedToReceiveAd(ad: Ad?) {
-                        preparedRewardedAd = null
-                        isRewardedAdLoading = false
-                        rewardedAdUnavailable = true
-                    }
+    val activity = context.findActivity()
+    val rewardedAdController = remember(activity) {
+        activity?.let {
+            RewardedAdController(
+                activity = it,
+                onReward = {
+                    petsViewModel.unlockMorePets()
+                    showPetLimitDialog = false
                 },
             )
-        } catch (_: Exception) {
-            preparedRewardedAd = null
-            isRewardedAdLoading = false
-            rewardedAdUnavailable = true
         }
     }
+    val preparedRewardedAd = rewardedAdController?.preparedAd
+    val isRewardedAdLoading = rewardedAdController?.isLoading ?: false
+    val rewardedAdUnavailable = rewardedAdController?.unavailable ?: true
 
     // Deixa o anúncio pronto antes de o usuário chegar ao limite. Assim o
     // diálogo não fica preso em uma primeira tentativa de carregamento.
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        loadRewardedAd()
+    LaunchedEffect(rewardedAdController) {
+        rewardedAdController?.load()
+    }
+    DisposableEffect(rewardedAdController) {
+        onDispose {
+            rewardedAdController?.dispose()
+        }
     }
 
     // ── ViewModel de Lembretes ────────────────────────────────────────────────
@@ -256,7 +238,7 @@ fun MainScreen(
                                 if (petCount < petLimit) {
                                     onNavigateToNewPet()
                                 } else {
-                                    rewardedAdUnavailable = false
+                                    rewardedAdController?.clearUnavailable()
                                     showPetLimitDialog = true
                                 }
                             }
@@ -268,12 +250,6 @@ fun MainScreen(
                 )
             }
         }
-    }
-
-    // Se a primeira tentativa falhar, permite uma nova busca ao abrir o
-    // diálogo sem criar várias requisições durante recomposições.
-    androidx.compose.runtime.LaunchedEffect(showPetLimitDialog) {
-        if (showPetLimitDialog) loadRewardedAd()
     }
 
     if (showPetLimitDialog) {
@@ -303,47 +279,11 @@ fun MainScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        val rewardedAd = preparedRewardedAd
-                        if (rewardedAd == null) {
-                            loadRewardedAd()
+                        if (preparedRewardedAd == null) {
+                            rewardedAdController?.load()
                             return@Button
                         }
-
-                        preparedRewardedAd = null
-                        isRewardedAdLoading = true
-                        var rewardGranted = false
-                        rewardedAd.setVideoListener {
-                            rewardGranted = true
-                            isRewardedAdLoading = false
-                            showPetLimitDialog = false
-                            petsViewModel.unlockMorePets()
-                            loadRewardedAd()
-                        }
-                        if (!rewardedAd.showAd(
-                                object : AdDisplayListener {
-                                    override fun adDisplayed(ad: Ad) = Unit
-
-                                    override fun adClicked(ad: Ad) = Unit
-
-                                    override fun adHidden(ad: Ad) {
-                                        if (!rewardGranted) {
-                                            isRewardedAdLoading = false
-                                            rewardedAdUnavailable = true
-                                        }
-                                    }
-
-                                    override fun adNotDisplayed(ad: Ad) {
-                                        isRewardedAdLoading = false
-                                        rewardedAdUnavailable = true
-                                        loadRewardedAd()
-                                    }
-                                },
-                            )
-                        ) {
-                            isRewardedAdLoading = false
-                            rewardedAdUnavailable = true
-                            loadRewardedAd()
-                        }
+                        rewardedAdController?.show()
                     },
                     enabled = !isRewardedAdLoading,
                 ) {
