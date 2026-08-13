@@ -36,6 +36,13 @@ class RewardedAdController(
     var unavailable by mutableStateOf(false)
         private set
 
+    /**
+     * Motivo retornado pela SDK na última tentativa de carregamento/exibição.
+     * É mantido para diagnóstico da configuração de produção.
+     */
+    var lastErrorMessage by mutableStateOf<String?>(null)
+        private set
+
     private var isDisposed = false
 
     fun load() {
@@ -43,6 +50,7 @@ class RewardedAdController(
 
         isLoading = true
         unavailable = false
+        lastErrorMessage = null
         val candidate = StartAppAd(activity)
 
         try {
@@ -55,6 +63,7 @@ class RewardedAdController(
                         preparedAd = candidate
                         isLoading = false
                         unavailable = false
+                        lastErrorMessage = null
                         Log.d(TAG, "Rewarded ad loaded")
                     }
 
@@ -64,7 +73,8 @@ class RewardedAdController(
                         preparedAd = null
                         isLoading = false
                         unavailable = true
-                        Log.w(TAG, "Rewarded ad failed to load: ${ad?.errorMessage}")
+                        lastErrorMessage = ad?.errorMessage?.takeIf { it.isNotBlank() } ?: "mensagem vazia"
+                        Log.w(TAG, "Rewarded ad failed to load: ${lastErrorMessage}")
                     }
                 },
             )
@@ -72,6 +82,7 @@ class RewardedAdController(
             preparedAd = null
             isLoading = false
             unavailable = true
+            lastErrorMessage = error.message?.takeIf { it.isNotBlank() } ?: error.javaClass.simpleName
             Log.w(TAG, "Rewarded ad load threw an exception", error)
         }
     }
@@ -93,6 +104,9 @@ class RewardedAdController(
             finished = true
             isLoading = false
             unavailable = !success
+            if (success) {
+                lastErrorMessage = null
+            }
             load()
         }
 
@@ -138,6 +152,7 @@ class RewardedAdController(
 
     fun clearUnavailable() {
         unavailable = false
+        lastErrorMessage = null
     }
 
     fun dispose() {

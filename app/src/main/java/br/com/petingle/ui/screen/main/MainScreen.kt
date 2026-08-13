@@ -128,6 +128,7 @@ fun MainScreen(
     val preparedRewardedAd = rewardedAdController?.preparedAd
     val isRewardedAdLoading = rewardedAdController?.isLoading ?: false
     val rewardedAdUnavailable = rewardedAdController?.unavailable ?: true
+    val rewardedAdError = rewardedAdController?.lastErrorMessage
 
     // Deixa o anúncio pronto antes de o usuário chegar ao limite. Assim o
     // diálogo não fica preso em uma primeira tentativa de carregamento.
@@ -273,6 +274,13 @@ fun MainScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
+                        rewardedAdError?.takeIf { it.isNotBlank() }?.let { errorMessage ->
+                            Text(
+                                "Detalhe técnico: $errorMessage",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                            )
+                        }
                     }
                 }
             },
